@@ -1,0 +1,53 @@
+name: ci
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+
+jobs:
+  freeze-and-package:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [ "3.10", "3.11", "3.12" ]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install package (metadata + wrapper layers only)
+        # The forensic parsing dependency (ccl_chromium_reader) is installed
+        # from source at analysis time and is intentionally NOT required here:
+        # the checks below exercise the freeze/packaging layer, which imports
+        # no parsing code.
+        run: python -m pip install -e .
+
+      - name: Verify engine freeze (SHA-256 pin)
+        run: python -m comettrace.provenance
+
+      - name: Check package metadata is importable without the engine deps
+        run: |
+          python - <<'PY'
+          import comettrace as c
+          assert c.__version__ == "0.37.0.post1", c.__version__
+          assert c.ENGINE_SCHEMA_VERSION == "0.37"
+          assert len(c.ENGINE_SHA256) == 64
+          print("metadata ok:", c.__version__, c.ENGINE_SHA256[:12])
+          PY
+
+      - name: Confirm console entry point is registered
+        # Do not execute the engine here: importing it deliberately fails
+        # fast when the forensic parsing dependency is absent (as in CI).
+        # We only assert the "comettrace" script was installed.
+        run: |
+          python - <<'PY'
+          from importlib.metadata import entry_points
+          scripts = entry_points(group="console_scripts")
+          names = {e.name for e in scripts}
+          assert "comettrace" in names, sorted(names)
+          print("entry point registered: comettrace")
+          PY

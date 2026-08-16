@@ -1,0 +1,9 @@
+Comet Browser/Computer Artifact Reconstructor
+Copyright 2026 Kyongho Gong, Jihun Joun
+
+This product is the companion tool to the paper "Reconstructing Agentic AI
+Behavior from Browser Artifacts: A Forensic Case Study of Perplexity Comet".
+
+It depends at runtime on ccl_chromium_reader and ccl_simplesnappy
+(CCL Solutions Group Ltd., https://github.com/cclgroupltd), which are
+installed separately from source and carry their own licenses.

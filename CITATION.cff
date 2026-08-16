@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+message: "If you use this tool, please cite the accompanying paper."
+title: "CometTrace"
+version: 0.37.0.post1
+authors:
+  - family-names: Gong
+    given-names: Kyongho
+  - family-names: Joun
+    given-names: Jihun
+license: Apache-2.0
+preferred-citation:
+  type: article
+  title: "Reconstructing Agentic AI Behavior from Browser Artifacts: A Forensic Case Study of Perplexity Comet"
+  authors:
+    - family-names: Gong
+      given-names: Kyongho
+    - family-names: Joun
+      given-names: Jihun
+  year: 2026

@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "comettrace"
+# Package version tracks the frozen engine's report schema_version (0.37);
+# ".post1" marks packaging-only changes with no engine modification.
+version = "0.37.0.post1"
+description = "Reconstruct Perplexity Comet Browser Control / Computer-mode agent behavior from IndexedDB LevelDB artifacts."
+readme = "README.md"
+requires-python = ">=3.10,<3.13"
+authors = [{ name = "Kyongho Gong" }, { name = "Jihun Joun" }]
+license = { text = "Apache-2.0" }
+keywords = ["digital-forensics", "browser-forensics", "leveldb", "indexeddb", "agentic-ai", "perplexity-comet"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "License :: OSI Approved :: Apache Software License",
+  "Topic :: Security",
+]
+# ccl_chromium_reader is not on PyPI; it is installed from GitHub source
+# (see scripts/install_ccl_dependencies.*). AUTHOR ACTION: pin the exact
+# commit hash validated in the experiments before public release.
+# Brotli and zstd are decompression codecs required by ccl_chromium_reader
+# at import time; ccl imports the "zstd" module specifically.
+dependencies = [
+  "Brotli>=1.1.0",
+  "zstandard>=0.22.0",
+  "zstd>=1.5.5",
+]
+
+[project.scripts]
+comettrace = "comettrace.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]

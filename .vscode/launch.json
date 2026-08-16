@@ -1,0 +1,56 @@
+{
+  // Run these from the left "Run and Debug" panel (Ctrl+Shift+D):
+  // pick a configuration from the dropdown, then press the green play button.
+  // No virtual environment or manual activation is required — VS Code uses
+  // the Python interpreter selected at the bottom-right of the window.
+  //
+  // The first three configs are VERIFICATION checks and need no forensic
+  // dependency (ccl). "Run CometTrace" runs a real analysis and
+  // does require ccl (see scripts/install_ccl_dependencies.ps1) plus a real
+  // --input path.
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "1. Verify engine freeze (SHA-256)",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "comettrace.provenance",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}",
+      "env": { "PYTHONPATH": "${workspaceFolder}/src" }
+    },
+    {
+      "name": "2. Print package metadata",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/tools/check_metadata.py",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}",
+      "env": { "PYTHONPATH": "${workspaceFolder}/src" }
+    },
+    {
+      "name": "3. Show CLI help",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "comettrace",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}",
+      "env": { "PYTHONPATH": "${workspaceFolder}/src" },
+      "args": ["--help"]
+    },
+    {
+      "name": "Run CometTrace (needs ccl + real --input)",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "comettrace",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}",
+      "env": { "PYTHONPATH": "${workspaceFolder}/src" },
+      "args": [
+        "--input", "C:/Users/<USER>/AppData/Local/Perplexity/Comet/Profile10/Default",
+        "--output", "output/reconstruction.json",
+        "--html-output", "output/reconstruction.html"
+      ]
+    }
+  ]
+}

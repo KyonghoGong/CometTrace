@@ -1,0 +1,24 @@
+{
+  "package": "comettrace",
+  "package_version": "0.37.0.post1",
+  "engine_file": "src/comettrace/legacy_engine.py",
+  "engine_schema_version": "0.37",
+  "engine_sha256": "f58b3c3683c4f05e5be2cb7e75080e8e26ef37b5e7e973030d5b921ca5cdaf80",
+  "engine_frozen": true,
+  "logic_changes_relative_to_engine": false,
+  "note": "The historical refactor_manifest.json pinned engine digest 6d9c702d... for an earlier engine revision (labeled 0.27). The digest above is the engine actually shipped and validated (report schema_version 0.37). Author confirmation of the intended citable version is recorded in the repository history.",
+  "python_version_validated": "AUTHOR ACTION: record the Python version used for the paper's released outputs",
+  "ccl_chromium_reader_commit": "AUTHOR ACTION: pin the validated commit hash",
+  "known_output_variance": {
+    "ephemeral_extraction_path": "For zip inputs, the engine embeds the randomized temp extraction directory in path-bearing fields; canonicalize before comparing outputs (see tests/test_output_equivalence.py).",
+    "os_path_forms": "Reports produced on Windows and POSIX hosts differ in path separators and temp roots for the same logical evidence paths.",
+    "environment_sensitive_fields": [
+      "condensed_reconstruction_summary_v29.all_time_values_overview_v3x.relative_order_values.invalid_offset_thread_count",
+      "condensed_reconstruction_summary_v29.case_focused_core_findings_v3x.cross_snapshot_deletion_diff_ready_keys",
+      "condensed_reconstruction_summary_v29.case_focused_core_findings_v3x.key_time_values_sample"
+    ],
+    "environment_sensitivity_note": "Observed to differ between the originally released outputs (Windows host, unpinned ccl_chromium_reader revision) and fresh Linux runs while all extraction_summary and summary values remained identical. Pinning the ccl commit and host Python version is required for byte-stable full-report reproduction."
+  },
+  "tool_name": "CometTrace",
+  "naming_note": "Repo/package/CLI aligned to the paper's tool name CometTrace (package 'comettrace', command 'comettrace'). The frozen engine emits an internal JSON \"tool\" label of \"comet-browser-reconstructor\"; this is a pre-freeze constant inside legacy_engine.py and is left unchanged so the engine SHA-256 digest above stays valid. It does not affect analysis."
+}

@@ -1,0 +1,17 @@
+{
+  "refactor_type": "behavior-preserving package refactor",
+  "engine_version": "0.27",
+  "package_version": "0.27.0-refactor1",
+  "original_filename": "comet_browser_reconstruct(7).py",
+  "legacy_engine_path": "src/comettrace/legacy_engine.py",
+  "legacy_engine_sha256": "6d9c702d1efda18bb8544b2d72a7638962dc09dbb3b377d29b489f5166fcf4a0",
+  "logic_changes": false,
+  "added_layers": [
+    "Python package layout",
+    "CLI entry point",
+    "Backward-compatible launcher",
+    "VS Code launch/tasks configuration",
+    "Installation scripts",
+    "README and documentation"
+  ]
+}

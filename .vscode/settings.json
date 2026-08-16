@@ -1,0 +1,11 @@
+{
+  "python.analysis.extraPaths": ["src"],
+  "python.testing.pytestEnabled": false,
+  "terminal.integrated.env.windows": { "PYTHONPATH": "${workspaceFolder}/src" },
+  "terminal.integrated.env.linux": { "PYTHONPATH": "${workspaceFolder}/src" },
+  "terminal.integrated.env.osx": { "PYTHONPATH": "${workspaceFolder}/src" },
+  "files.exclude": {
+    "**/__pycache__": true,
+    "**/*.pyc": true
+  }
+}
