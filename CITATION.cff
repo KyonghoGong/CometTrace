@@ -1,19 +1,54 @@
 cff-version: 1.2.0
-message: "If you use this tool, please cite the accompanying paper."
+type: software
+
+message: >-
+  If you use CometTrace, please cite the accompanying paper and identify the
+  software version used in your analysis.
+
 title: "CometTrace"
-version: 0.37.0.post1
+
+version: "0.37.0.post1"
+
+repository-code: "https://github.com/KyonghoGong/CometTrace"
+
+license: "Apache-2.0"
+
 authors:
-  - family-names: Gong
-    given-names: Kyongho
-  - family-names: Joun
-    given-names: Jihun
-license: Apache-2.0
+  - family-names: "Gong"
+    given-names: "Kyongho"
+
+  - family-names: "Joun"
+    given-names: "Jihun"
+
+abstract: >-
+  CometTrace is an open-source forensic reconstruction tool for recovering
+  per-thread behavioral timelines from Perplexity Comet IndexedDB LevelDB
+  artifacts. It supports reconstruction of thread and prompt context,
+  plan and workflow structures, tool-event traces, provider-labeled action
+  rationales where present, final responses, and persistence-state
+  information.
+
+keywords:
+  - "digital forensics"
+  - "browser forensics"
+  - "agentic AI"
+  - "behavior reconstruction"
+  - "IndexedDB"
+  - "LevelDB"
+  - "Perplexity Comet"
+
 preferred-citation:
   type: article
-  title: "Reconstructing Agentic AI Behavior from Browser Artifacts: A Forensic Case Study of Perplexity Comet"
+
+  title: >-
+    Reconstructing Agentic AI Behavior from Browser Artifacts:
+    A Forensic Case Study of Perplexity Comet
+
   authors:
-    - family-names: Gong
-      given-names: Kyongho
-    - family-names: Joun
-      given-names: Jihun
+    - family-names: "Gong"
+      given-names: "Kyongho"
+
+    - family-names: "Joun"
+      given-names: "Jihun"
+
   year: 2026

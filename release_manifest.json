@@ -6,19 +6,29 @@
   "engine_sha256": "f58b3c3683c4f05e5be2cb7e75080e8e26ef37b5e7e973030d5b921ca5cdaf80",
   "engine_frozen": true,
   "logic_changes_relative_to_engine": false,
-  "note": "The historical refactor_manifest.json pinned engine digest 6d9c702d... for an earlier engine revision (labeled 0.27). The digest above is the engine actually shipped and validated (report schema_version 0.37). Author confirmation of the intended citable version is recorded in the repository history.",
-  "python_version_validated": "AUTHOR ACTION: record the Python version used for the paper's released outputs",
-  "ccl_chromium_reader_commit": "AUTHOR ACTION: pin the validated commit hash",
+  "release_scope": "Source code only. Raw acquisitions and generated JSON/HTML reports are intentionally excluded.",
+  "note": "The historical refactor_manifest.json pinned digest 6d9c702d... for an earlier engine revision labeled 0.27. The digest above identifies the frozen schema 0.37 engine shipped in this source release.",
+  "paper_environment": {
+    "python_version_reported": "3.12",
+    "python_patch_version": null,
+    "ccl_chromium_reader_commit": null,
+    "ccl_simplesnappy_commit": null,
+    "status": "The exact Python patch version and CCL commit revisions used for the original paper-associated outputs were not recorded in the available release materials. Byte-identical reproduction of those archived reports is therefore not claimed."
+  },
+  "posthoc_revalidation_environment": {
+    "date": "2026-08-09",
+    "purpose": "Post-hoc rerun of the available acquisitions; this is not a reconstruction of the unrecorded original parser environment.",
+    "ccl_chromium_reader_version": "0.3.18",
+    "ccl_chromium_reader_commit": "ef840de30221c4d65bc96d2f4d9057e9ef2f526d",
+    "ccl_simplesnappy_version": "0.4",
+    "ccl_simplesnappy_commit": "3d085230baa8c46cf2090ebba29bf6e8eab31087"
+  },
   "known_output_variance": {
-    "ephemeral_extraction_path": "For zip inputs, the engine embeds the randomized temp extraction directory in path-bearing fields; canonicalize before comparing outputs (see tests/test_output_equivalence.py).",
-    "os_path_forms": "Reports produced on Windows and POSIX hosts differ in path separators and temp roots for the same logical evidence paths.",
-    "environment_sensitive_fields": [
-      "condensed_reconstruction_summary_v29.all_time_values_overview_v3x.relative_order_values.invalid_offset_thread_count",
-      "condensed_reconstruction_summary_v29.case_focused_core_findings_v3x.cross_snapshot_deletion_diff_ready_keys",
-      "condensed_reconstruction_summary_v29.case_focused_core_findings_v3x.key_time_values_sample"
-    ],
-    "environment_sensitivity_note": "Observed to differ between the originally released outputs (Windows host, unpinned ccl_chromium_reader revision) and fresh Linux runs while all extraction_summary and summary values remained identical. Pinning the ccl commit and host Python version is required for byte-stable full-report reproduction."
+    "ephemeral_extraction_path": "For ZIP inputs, the engine embeds a randomized temporary extraction directory in path-bearing fields. Canonicalize it before comparing entry-point outputs; see tests/test_output_equivalence.py.",
+    "os_path_forms": "Reports produced on Windows and POSIX hosts can differ in path separators and temporary roots.",
+    "parser_revision": "The 2026-08-09 post-hoc rerun decoded records that an earlier unpinned parser environment had reported as bad or undecoded. Parsed-record, live-record, relevant-record, and summary values can therefore differ across parser revisions.",
+    "comparison_limit": "The included equivalence test compares the legacy and packaged entry points within the same environment; it does not compare generated reports against archived paper outputs."
   },
   "tool_name": "CometTrace",
-  "naming_note": "Repo/package/CLI aligned to the paper's tool name CometTrace (package 'comettrace', command 'comettrace'). The frozen engine emits an internal JSON \"tool\" label of \"comet-browser-reconstructor\"; this is a pre-freeze constant inside legacy_engine.py and is left unchanged so the engine SHA-256 digest above stays valid. It does not affect analysis."
+  "naming_note": "The repository, package, and CLI use the paper's tool name CometTrace. The frozen engine emits an internal JSON tool label of comet-browser-reconstructor; this pre-freeze constant is left unchanged to preserve the pinned engine digest and does not affect analysis."
 }

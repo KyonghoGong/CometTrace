@@ -4,36 +4,71 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "comettrace"
-# Package version tracks the frozen engine's report schema_version (0.37);
-# ".post1" marks packaging-only changes with no engine modification.
+
+# The package version follows the frozen reconstruction engine's report
+# schema_version 0.37. The ".post1" suffix identifies packaging,
+# documentation, and release-layer changes that do not modify the frozen
+# reconstruction engine.
 version = "0.37.0.post1"
-description = "Reconstruct Perplexity Comet Browser Control / Computer-mode agent behavior from IndexedDB LevelDB artifacts."
+
+description = "Open-source forensic tool for reconstructing Perplexity Comet Browser Control and Computer-mode behavior from IndexedDB LevelDB artifacts."
+
 readme = "README.md"
 requires-python = ">=3.10,<3.13"
-authors = [{ name = "Kyongho Gong" }, { name = "Jihun Joun" }]
+
+authors = [
+  { name = "Kyongho Gong" },
+  { name = "Jihun Joun" }
+]
+
 license = { text = "Apache-2.0" }
-keywords = ["digital-forensics", "browser-forensics", "leveldb", "indexeddb", "agentic-ai", "perplexity-comet"]
+
+keywords = [
+  "digital-forensics",
+  "browser-forensics",
+  "leveldb",
+  "indexeddb",
+  "agentic-ai",
+  "perplexity-comet",
+  "behavior-reconstruction"
+]
+
 classifiers = [
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "License :: OSI Approved :: Apache Software License",
-  "Topic :: Security",
+  "Topic :: Security"
 ]
-# ccl_chromium_reader is not on PyPI; it is installed from GitHub source
-# (see scripts/install_ccl_dependencies.*). AUTHOR ACTION: pin the exact
-# commit hash validated in the experiments before public release.
-# Brotli and zstd are decompression codecs required by ccl_chromium_reader
-# at import time; ccl imports the "zstd" module specifically.
+
+# ccl_chromium_reader and ccl_simplesnappy are not installed from PyPI.
+# They are installed from the post-hoc revalidation commits pinned in:
+#
+#   scripts/install_ccl_dependencies.ps1
+#   scripts/install_ccl_dependencies.sh
+#   release_manifest.json
+#
+# These pinned commits define the documented post-hoc revalidation
+# environment. They are not claimed to be the unrecorded revisions used for
+# the original paper-associated outputs.
+#
+# Brotli, zstandard, and zstd are decompression dependencies required by the
+# LevelDB parsing environment. ccl_chromium_reader imports the zstd module at
+# load time.
+
 dependencies = [
   "Brotli>=1.1.0",
   "zstandard>=0.22.0",
-  "zstd>=1.5.5",
+  "zstd>=1.5.5"
 ]
 
 [project.scripts]
 comettrace = "comettrace.cli:main"
+
+[project.urls]
+Repository = "https://github.com/KyonghoGong/CometTrace"
+Issues = "https://github.com/KyonghoGong/CometTrace/issues"
 
 [tool.setuptools]
 package-dir = {"" = "src"}

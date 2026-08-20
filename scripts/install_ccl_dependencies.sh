@@ -1,14 +1,12 @@
-#!/usr/bin/env bash
-set -euo pipefail
-
-# Forensic parsing dependencies for CometTrace.
-# ccl_chromium_reader is not on PyPI and is installed from source.
-# It imports Brotli and the "zstd" module at load time, so both codecs
-# must be present or `import ccl_chromium_reader` fails with
-# ModuleNotFoundError. Install order does not matter except that the
-# codecs must be available before the reader is used.
+# These commits define the 2026-08-09 post-hoc revalidation environment.
+# They are not claimed to be the unrecorded commits used for the original
+# paper-associated outputs.
 
 python -m pip install Brotli
 python -m pip install zstandard zstd
-python -m pip install "https://github.com/cclgroupltd/ccl_simplesnappy/archive/refs/heads/master.zip"
-python -m pip install --no-deps "https://github.com/cclgroupltd/ccl_chromium_reader/archive/refs/heads/master.zip"
+
+python -m pip install \
+  "https://github.com/cclgroupltd/ccl_simplesnappy/archive/3d085230baa8c46cf2090ebba29bf6e8eab31087.zip"
+
+python -m pip install --no-deps \
+  "https://github.com/cclgroupltd/ccl_chromium_reader/archive/ef840de30221c4d65bc96d2f4d9057e9ef2f526d.zip"

@@ -1,41 +1,154 @@
 # Example Commands
 
-Replace the example paths with your own. The `--target-reference` values must
-match the reference code actually embedded in the acquisition, or the filtered
-report will be empty.
+Replace all example paths and reference codes with values appropriate for your
+own authorized acquisition.
+
+The `--target-reference` value must match a reference code actually recovered
+from the supplied acquisition. If it does not match, the filtered report may
+be empty.
+
+## Observed Comet profile layout
+
+In the study environment, the Windows profile root followed this structure:
+
+```text
+%LOCALAPPDATA%\Perplexity\Comet\User Data\<Profile>\
+```
+
+The relevant Perplexity IndexedDB LevelDB directory was located at:
+
+```text
+%LOCALAPPDATA%\Perplexity\Comet\User Data\<Profile>\
+IndexedDB\https_www.perplexity.ai_0.indexeddb.leveldb
+```
+
+`<Profile>` is a placeholder for the active Chromium-style profile directory,
+such as:
+
+```text
+Default
+Profile 1
+Profile 10
+```
+
+For example, if the active profile is `Profile 10`, the profile root is:
+
+```text
+%LOCALAPPDATA%\Perplexity\Comet\User Data\Profile 10\
+```
+
+It is not:
+
+```text
+%LOCALAPPDATA%\Perplexity\Comet\Profile10\Default\
+```
+
+Analyze a forensic copy or acquisition ZIP rather than a live browser profile.
 
 ## Profile-wide inventory
 
 ```powershell
-comettrace --input ".\dataset\Profile10\Default" --output output\inventory.json --html-output output\inventory.html
+$acquisition = "C:\Path\To\Copied-Profile-or-Acquisition.zip"
+
+comettrace `
+  --input "$acquisition" `
+  --output "output\inventory.json" `
+  --html-output "output\inventory.html"
 ```
 
-## Known Browser Control case
+When `--target-reference` is omitted, CometTrace produces a profile-wide
+inventory. Residual records from earlier tasks may therefore appear in the
+report.
+
+## Browser Control target filter
 
 ```powershell
-comettrace --input ".\dataset\Profile10\Default" --target-reference "S08_Calendar_20260527" --output output\browser_calendar.json --html-output output\browser_calendar.html
+$acquisition = "C:\Path\To\Acquisition.zip"
+$referenceCode = "YOUR_REFERENCE_CODE"
+
+comettrace `
+  --input "$acquisition" `
+  --target-reference "$referenceCode" `
+  --output "output\browser_case.json" `
+  --html-output "output\browser_case.html"
 ```
 
-## Known Computer mode case
+The target-reference option is a report filter. It does not change the
+underlying LevelDB parsing rules.
+
+## Computer mode target filter
 
 ```powershell
-comettrace --input ".\dataset\Profile10\Default" --target-reference "Computer_Calendar_20260602" --output output\computer_calendar.json --html-output output\computer_calendar.html
+$acquisition = "C:\Path\To\Acquisition.zip"
+$referenceCode = "YOUR_REFERENCE_CODE"
+
+comettrace `
+  --input "$acquisition" `
+  --target-reference "$referenceCode" `
+  --output "output\computer_case.json" `
+  --html-output "output\computer_case.html"
 ```
+
+Computer mode evidence may be distributed across multiple linked records
+rather than contained in a single thread record.
 
 ## Deletion comparison
 
 ```powershell
-comettrace --before ".\snapshots\before.zip" --after ".\snapshots\after.zip" --output output\delete_comparison.json --html-output output\delete_comparison.html
+$beforeAcquisition = "C:\Path\To\Before-Deletion.zip"
+$afterAcquisition = "C:\Path\To\After-Deletion.zip"
+
+comettrace `
+  --before "$beforeAcquisition" `
+  --after "$afterAcquisition" `
+  --output "output\deletion_comparison.json" `
+  --html-output "output\deletion_comparison.html"
 ```
 
-## Direct LevelDB folder with blob folder
+Interpret the comparison using the acquisition sequence and external
+ground-truth record. The presence or absence of a list entry alone should not
+be treated as proof that all underlying thread content was deleted.
+
+## Direct LevelDB folder with matching blob folder
 
 ```powershell
-comettrace --input ".\dataset\https_www.perplexity.ai_0.indexeddb.leveldb" --blob-input ".\dataset\https_www.perplexity.ai_0.indexeddb.blob" --output output\reconstruction.json --html-output output\reconstruction.html
+$leveldb = "C:\Path\To\https_www.perplexity.ai_0.indexeddb.leveldb"
+$blob = "C:\Path\To\https_www.perplexity.ai_0.indexeddb.blob"
+
+comettrace `
+  --input "$leveldb" `
+  --blob-input "$blob" `
+  --output "output\reconstruction.json" `
+  --html-output "output\reconstruction.html"
 ```
 
-## Single scenario acquisition (as validated)
+The blob folder is optional unless matching blob-backed values are available
+and required for the examination.
+
+## Single scenario acquisition ZIP
 
 ```powershell
-comettrace --input "..\CometDataset\S04_IndexedDB.zip" --output output\S04.json --html-output output\S04.html
+$acquisition = "C:\Path\To\Scenario_IndexedDB.zip"
+
+comettrace `
+  --input "$acquisition" `
+  --output "output\scenario.json" `
+  --html-output "output\scenario.html"
 ```
+
+## Legacy launcher
+
+The backward-compatible launcher remains available:
+
+```powershell
+python comet_browser_reconstruct.py `
+  --input "C:\Path\To\Acquisition.zip" `
+  --output "output\legacy_reconstruction.json"
+```
+
+## Evidence-handling reminder
+
+Do not commit real acquisitions or generated reports to the public repository.
+Acquisitions and reports can contain prompts, email or calendar content,
+account identifiers, uploaded-file URLs, screenshot references, and local host
+paths.

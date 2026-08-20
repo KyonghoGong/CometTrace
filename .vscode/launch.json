@@ -1,23 +1,38 @@
 {
-  // Run these from the left "Run and Debug" panel (Ctrl+Shift+D):
-  // pick a configuration from the dropdown, then press the green play button.
-  // No virtual environment or manual activation is required — VS Code uses
-  // the Python interpreter selected at the bottom-right of the window.
+  // CometTrace VS Code launch configurations.
   //
-  // The first three configs are VERIFICATION checks and need no forensic
-  // dependency (ccl). "Run CometTrace" runs a real analysis and
-  // does require ccl (see scripts/install_ccl_dependencies.ps1) plus a real
-  // --input path.
+  // Configurations 1 and 2 verify package metadata and engine integrity.
+  // They do not require a forensic acquisition or the CCL parsing dependency.
+  //
+  // Configurations 3 and 4 import the reconstruction engine and therefore
+  // require the dependencies installed by:
+  //
+  //   .\scripts\install_ccl_dependencies.ps1
+  //   python -m pip install -e .
+  //
+  // In the study environment, the observed Windows profile layout was:
+  //
+  //   %LOCALAPPDATA%/Perplexity/Comet/User Data/<Profile>/
+  //
+  // where <Profile> was the active profile directory, such as Default,
+  // Profile 1, or Profile 10.
+  //
+  // For forensic examination, use a copied profile or acquisition ZIP rather
+  // than a live browser profile.
+
   "version": "0.2.0",
+
   "configurations": [
     {
-      "name": "1. Verify engine freeze (SHA-256)",
+      "name": "1. Verify engine integrity (SHA-256)",
       "type": "debugpy",
       "request": "launch",
       "module": "comettrace.provenance",
       "console": "integratedTerminal",
       "cwd": "${workspaceFolder}",
-      "env": { "PYTHONPATH": "${workspaceFolder}/src" }
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/src"
+      }
     },
     {
       "name": "2. Print package metadata",
@@ -26,30 +41,41 @@
       "program": "${workspaceFolder}/tools/check_metadata.py",
       "console": "integratedTerminal",
       "cwd": "${workspaceFolder}",
-      "env": { "PYTHONPATH": "${workspaceFolder}/src" }
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/src"
+      }
     },
     {
-      "name": "3. Show CLI help",
+      "name": "3. Show CometTrace CLI help (requires CCL)",
       "type": "debugpy",
       "request": "launch",
       "module": "comettrace",
       "console": "integratedTerminal",
       "cwd": "${workspaceFolder}",
-      "env": { "PYTHONPATH": "${workspaceFolder}/src" },
-      "args": ["--help"]
-    },
-    {
-      "name": "Run CometTrace (needs ccl + real --input)",
-      "type": "debugpy",
-      "request": "launch",
-      "module": "comettrace",
-      "console": "integratedTerminal",
-      "cwd": "${workspaceFolder}",
-      "env": { "PYTHONPATH": "${workspaceFolder}/src" },
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/src"
+      },
       "args": [
-        "--input", "C:/Users/<USER>/AppData/Local/Perplexity/Comet/Profile10/Default",
-        "--output", "output/reconstruction.json",
-        "--html-output", "output/reconstruction.html"
+        "--help"
+      ]
+    },
+    {
+      "name": "4. Run CometTrace (requires CCL and acquisition)",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "comettrace",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/src"
+      },
+      "args": [
+        "--input",
+        "C:/Path/To/Copied-Profile-or-Acquisition.zip",
+        "--output",
+        "output/reconstruction.json",
+        "--html-output",
+        "output/reconstruction.html"
       ]
     }
   ]
