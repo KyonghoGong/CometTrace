@@ -17,19 +17,46 @@ contain personal or case-sensitive evidence.
 
 ## Requirements
 
-- **Python 3.10-3.12.** Python 3.11 or 3.12 is recommended. The paper reports
+* **Python 3.10-3.12.** Python 3.11 or 3.12 is recommended. The paper reports
   Python 3.12, but the exact patch version used for the original
   paper-associated outputs was not recorded in the available release
   materials.
-- `ccl_chromium_reader` and `ccl_simplesnappy` (CCL Solutions Group Ltd.),
+* `ccl_chromium_reader` and `ccl_simplesnappy` (CCL Solutions Group Ltd.),
   installed from the source commits pinned in the installation scripts and
   recorded in `release_manifest.json`.
-- `Brotli`, `zstandard`, and `zstd`, which are required by the LevelDB parsing
+* `Brotli`, `zstandard`, and `zstd`, which are required by the LevelDB parsing
   dependencies.
 
 The CCL commits pinned in this repository define the 2026-08-09 post-hoc
 revalidation environment. They are not claimed to be the unrecorded commits
 used to generate the original paper-associated outputs.
+
+## Installation
+
+Clone the repository and install the pinned forensic dependencies:
+
+```bash
+git clone https://github.com/KyonghoGong/CometTrace.git
+cd CometTrace
+bash scripts/install_ccl_dependencies.sh
+python -m pip install -e .
+```
+
+## Quick Start
+
+Run CometTrace against a browser acquisition and generate JSON and HTML
+reconstruction reports:
+
+```bash
+comettrace \
+  --input <acquisition.zip> \
+  --output reconstruction.json \
+  --html-output reconstruction.html
+```
+
+Additional examples, including Browser Control, Computer mode, direct LevelDB
+input, and deletion-related reconstruction, are available in
+`examples/commands.md`.
 
 ## Engine freeze policy
 
@@ -43,3 +70,4 @@ Its SHA-256 digest is pinned in `release_manifest.json` and
 
 ```bash
 python -m comettrace.provenance
+```
