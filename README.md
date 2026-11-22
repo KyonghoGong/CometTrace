@@ -1,205 +1,136 @@
 # CometTrace
 
-*Comet Browser/Computer Artifact Reconstructor*
+**Browser artifact reconstruction for Perplexity Comet**  
+**Release:** v0.38.6 · **Python:** 3.10–3.12 · **Outputs:** JSON + HTML
 
-Version 0.38.6 writes report schema 0.38. Select `--engine v037` to run
-the frozen schema 0.37 engine. The default engine preserves verbatim answers in
-completed nested workflows when the retained child result is unambiguous.
-It uses the owning entry's backend UUID and narrows recipient and calendar
-field attribution when a prompt or unlabelled form input is ambiguous.
+CometTrace reconstructs task-level evidence from **forensic copies** of Comet's
+IndexedDB/LevelDB data: prompts, workflow steps, recorded tool events, final
+answers, and persistence/deletion indicators where the evidence supports them.
+It accompanies *Reconstructing Agentic AI Behavior from Browser Artifacts:
+A Forensic Case Study of Perplexity Comet*.
 
-For a staged comparison, supply
-`--before-stage` and `--after-stage` alongside the two input paths.
+**This repository contains source code, not browser acquisitions or personal data.**
+You must supply your own authorized, copied acquisition.
 
-CometTrace is an open-source forensic reconstruction tool that reconstructs
-per-thread behavioral timelines from Perplexity Comet's IndexedDB LevelDB
-artifacts and annotates the recovered evidence with persistence state.
+## 1. Install on Windows (PowerShell)
 
-The tool accompanies the paper "Reconstructing Agentic AI Behavior from
-Browser Artifacts: A Forensic Case Study of Perplexity Comet" and implements
-the paper's five-layer reconstruction model. Its reconstruction coverage is
-evaluated in the paper against recorded ground truth.
-
-This repository is a source-code release. It intentionally excludes raw
-browser acquisitions and generated JSON/HTML reports because those files may
-contain personal or case-sensitive evidence.
-
-## Requirements
-
-* **Python 3.10-3.12.** Python 3.11 or 3.12 is recommended. The paper reports
-  Python 3.12, but the exact patch version used for the original
-  paper-associated outputs was not recorded in the available release
-  materials.
-* `ccl_chromium_reader` and `ccl_simplesnappy` (CCL Solutions Group Ltd.),
-  installed from the source commits pinned in the installation scripts and
-  recorded in `release_manifest.json`.
-* `Brotli`, `zstandard`, and `zstd`, which are required by the LevelDB parsing
-  dependencies.
-
-The CCL commits pinned in this repository define the 2026-08-09 post-hoc
-revalidation environment. They are not claimed to be the unrecorded commits
-used to generate the original paper-associated outputs.
-
-## Installation
-
-From the repository root, create a Python 3.10–3.12 virtual environment.
-
-In Windows PowerShell, choose one command to create the environment. With
-the Python launcher and Python 3.12 installed, use:
+Open PowerShell or the VS Code terminal:
 
 ```powershell
+git clone https://github.com/KyonghoGong/CometTrace.git
+cd CometTrace
 py -3.12 -m venv .venv
 ```
 
-If your installation provides `python` directly, verify that it reports
-Python 3.10, 3.11 or 3.12, then create the environment:
+With the `py` launcher and only Python 3.11 installed, use `py -3.11 -m venv .venv`.
+If `py` is unavailable, use `python --version` to confirm Python 3.10,
+3.11, or 3.12, then run `python -m venv .venv` instead.
 
-```powershell
-python --version
-python -m venv .venv
-```
-
-For either Windows setup, run these two commands:
+Complete the installation using the new environment:
 
 ```powershell
 .\.venv\Scripts\python.exe scripts/install_ccl_dependencies.py
 .\.venv\Scripts\python.exe -m pip install .
+.\.venv\Scripts\python.exe -m pip check
 ```
 
-Linux or macOS:
+The dependency installer downloads the pinned CCL forensic parsing libraries.
 
-```sh
-python3.12 -m venv .venv
-.venv/bin/python scripts/install_ccl_dependencies.py
-.venv/bin/python -m pip install .
-```
+## 2. Analyze an acquisition
 
-Use that environment's Python for the checks below. In VS Code, select the
-environment with **Python: Select Interpreter** and open a new terminal.
-See [VS Code usage](docs/VS_CODE_USAGE.md) for the F5 configurations and tasks.
-
-```sh
-python -m pip check
-python -m comettrace.provenance
-python tools/verify_release.py
-python -m unittest discover -s tests -v
-python -m comettrace --help
-```
-
-## Research coverage
-
-The validated acquisitions cover Comet 148 and 156. See the [schema guide](docs/SUPPORTED_SCHEMAS.md)
-for the stored modes, the [architecture guide](docs/ARCHITECTURE.md) for the reconstruction
-pipeline and the [limitations](docs/LIMITATIONS.md) for attribution and concurrency boundaries.
-
-## Windows terminal examples
-
-From the project directory, create an output directory and supply your own acquisition paths.
-Use different output basenames for each run you want to keep.
+Replace `C:\Data\acquisition.zip` with the path to **your own** copied
+acquisition. Run from the CometTrace project folder:
 
 ```powershell
 New-Item -ItemType Directory -Force output | Out-Null
-.\.venv\Scripts\python.exe -m comettrace --input "C:\Data\older.zip" --output output/older.json --html-output output/older.html
-.\.venv\Scripts\python.exe -m comettrace --input "C:\Data\newer.zip" --output output/newer.json --html-output output/newer.html
+.\.venv\Scripts\python.exe -m comettrace --input "C:\Data\acquisition.zip" --output "output\case.json" --html-output "output\case.html"
 ```
 
-JSON contains per-thread records and evidence locations. HTML displays the reconstruction
-for review. Keep the acquisitions, report outputs and local account identifiers private.
-The release manifest pins the entry-point digest and all schema 0.38 evidence modules.
+Open `output\case.html` to review the reconstruction; `output\case.json`
+contains the structured results and evidence references.
 
-For a single stage, the named JSON and optional HTML each contain that stage.
-For an automatic multi-stage run, the named JSON maps each stage and source
-directory to its files. The named HTML is an index linking to the stage HTML
-files beside it. Stage filenames preserve Unicode and spaces and receive a
-suffix when names collide. Supply distinct JSON and HTML paths. Reusing a
-basename replaces that run's reports after all requested reports render.
+- **Separate acquisitions:** use different output names (for example,
+  `case1.json` and `case2.json`) to keep both results.
+- For a **multi-stage ZIP**, the top-level JSON lists each stage's JSON path.
+  With `--html-output`, it also lists each stage's HTML path, and the
+  top-level HTML index links to those reports.
+- To analyze **one stage**, list the stage IDs, then replace `<stage-id>`
+  with an ID from the list.
 
-## Installing from the cumulative patch
+  ```powershell
+  .\.venv\Scripts\python.exe -m comettrace --input "C:\Data\acquisition.zip" --list-stages
+  .\.venv\Scripts\python.exe -m comettrace --input "C:\Data\acquisition.zip" --stage "<stage-id>" --output "output\stage.json" --html-output "output\stage.html"
+  ```
 
-The ordinary clone of the release commit and the public source ZIP are ready
-to install. To reconstruct the same source from the published baseline on
-Windows, place the cumulative patch in the current directory and use a new
-checkout as shown below. Each Git command must succeed before continuing.
-The baseline predates the LF attributes. Applying to the index first lets
-Git use the release attributes from the first write to disk.
+- To filter by reference, see the [`--target-reference` examples](examples/commands.md).
+- The legacy `--browser-only` filter skips Computer/ASI expansion, including
+  workflows that use browser tools. Ordinary Search records can remain.
+  Omit the flag for the full analysis.
+
+The original command form is unchanged: `--input`, `--output`, and
+`--html-output`.
+
+## 3. Install on Ubuntu / Linux
+
+Check that `python3 --version` reports 3.10, 3.11, or 3.12 before continuing.
+The pip version check below confirms the virtual environment is ready.
+If Ubuntu's default Python lacks `venv` or `ensurepip`, run
+`sudo apt install python3-venv` and create the environment again.
+
+```bash
+git clone https://github.com/KyonghoGong/CometTrace.git
+cd CometTrace
+python3 -m venv .venv
+.venv/bin/python -m pip --version
+.venv/bin/python scripts/install_ccl_dependencies.py
+.venv/bin/python -m pip install .
+.venv/bin/python -m pip check
+mkdir -p output
+.venv/bin/python -m comettrace --input "/path/to/acquisition.zip" --output "output/case.json" --html-output "output/case.html"
+```
+
+The GitHub CI matrix covers **Windows and Ubuntu**
+with Python 3.10, 3.11, and 3.12. macOS is not part of that tested matrix.
+
+## 4. What the results do—and do not—mean
+
+- **Validated acquisitions:** Comet 148-series and Comet 156.0.8078.48 /
+  Perplexity Build 132. Other versions and unknown schemas are not guaranteed.
+- **Observed records vs. interpretation:** a recorded tool invocation or
+  reported success does not independently prove the external action occurred.
+- **UI selection:** some Search+BC / Computer / Computer+BC records share
+  `ASI/ASI` backend values; the exact UI choice may be **not established**.
+- **Deletion:** a UI-deleted thread can leave forensic residues; individual
+  deleted keys and retained content must be assessed separately.
+- **Empty results:** `--target-reference` can legitimately return no matching
+  threads (exit 0). Check the JSON diagnostics and database-selection details.
+- **Execution model:** independent CLI processes are supported; concurrent
+  analyses inside one Python process are not validated.
+
+For the frozen historical engine, add `--engine v037`. The default v0.38
+engine reports schema 0.38. The original v0.37 engine is preserved byte-for-byte;
+see [release provenance](release_manifest.json).
+
+## 5. Documentation and checks
+
+- [More CLI examples](examples/commands.md) — filters, stage selection,
+  deletion comparisons, and direct LevelDB input
+- [Supported schemas](docs/SUPPORTED_SCHEMAS.md)
+- [Architecture](docs/ARCHITECTURE.md)
+- [Known limitations](docs/LIMITATIONS.md)
+- [VS Code guide](docs/VS_CODE_USAGE.md)
+- [Contributing](CONTRIBUTING.md) · [Security reports](SECURITY.md)
+- [Citation information](CITATION.cff)
+
+To verify an installed copy, run these commands using its Python interpreter:
 
 ```powershell
-git clone --no-checkout https://github.com/KyonghoGong/CometTrace.git CometTrace-patched
-cd CometTrace-patched
-git read-tree 0cb17124a3e96f624896bcf33caed6f8afc68c89
-git apply --cached --check --whitespace=error-all ../CometTrace-0cb17124-to-0.38.6.patch
-git apply --cached --whitespace=error-all ../CometTrace-0cb17124-to-0.38.6.patch
-git checkout-index --all
+.\.venv\Scripts\python.exe -m comettrace.provenance
+.\.venv\Scripts\python.exe tools/verify_release.py
+.\.venv\Scripts\python.exe -m unittest discover -s tests -v
 ```
 
-Run the installation and verification commands above in `CometTrace-patched`.
-
-## Quick Start
-
-Run CometTrace against a browser acquisition and generate JSON and HTML
-reconstruction reports:
-
-```bash
-comettrace \
-  --input "path/to/acquisition.zip" \
-  --output reconstruction.json \
-  --html-output reconstruction.html
-```
-
-The input is your own copied acquisition ZIP or directory. A reference filter
-can legitimately return an empty `threads` list with exit code 0. Inspect
-`source.database_selection` for the selected database, its
-`perplexity_cache_record_count` in `available_databases`, and the selection
-reason. A readable store with zero recognized keys limits what can be inferred.
-An unavailable database or object store fails the command. For staged bundles,
-inspect the individual stage reports.
-
-Additional examples, including Browser Control, Computer mode, direct LevelDB
-input, and deletion-related reconstruction, are available in
-`examples/commands.md`.
-
-## Interpreting schema 0.38
-
-In schema 0.38, `classification.execution_mode` remains a compatibility category.
-`observed_backend` contains the owning entry's retained mode/model fields and
-source reference. `observed_tool_events` identifies recorded workflow tool steps.
-An invocation alone does not establish a successful browser action. A browser
-skill link in the query prefix is recorded separately. The tested ASI records
-do not identify which UI control the user selected. Read `ui_selection.status`
-before interpreting a backend category as a UI mode.
-
-`--browser-only` retains the historical scope: it skips Computer/ASI groups
-and list-only promotion, including ASI workflows that invoked browser tools.
-Search records can remain. The CLI prints this limitation to stderr and includes
-the omitted grouped browser-tool IDs in JSON diagnostics. Omit the option to
-include those tasks. Use `--database` to inspect other available accounts.
-
-Completed workflow answer payloads and completed answer markdown can supply a
-full answer. An unsupported structure can yield an unavailable answer. Explicit
-sidebar answer previews, including short strings, are marked as previews.
-Reported filename extraction from answer prose targets PDF. Explicit labels
-or matching quotes delimit names containing spaces. Extension case and Unicode
-are preserved. Browser History is a separate source. A completed download claim
-and a corroborating History row are separate fields.
-
-Stage JSON contains `diagnostics` and `source.history_read_status`.
-Distinguish a missing History file, a read failure, a successfully read empty
-table, an unrecognized store schema, and a reference filter with no matches.
-Readable empty results retain exit 0; inaccessible stores and failed database
-selection retain an error exit. These behaviors were tested on retained
-acquisitions and synthetic schema controls. For concurrent analysis, run
-separate CLI processes; the patch layer temporarily changes module globals.
-
-## Engine freeze policy
-
-The reconstruction engine
-(`src/comettrace/legacy_engine.py`, report `schema_version` 0.37) is
-**release-frozen** and is shipped byte-identical to the schema 0.37 engine
-associated with the paper analysis.
-
-Its SHA-256 digest is pinned in `release_manifest.json` and
-`comettrace/__init__.py` and can be checked at any time:
-
-```bash
-python -m comettrace.provenance
-```
+**Privacy:** work from authorized copies, not an active browser profile.
+Acquisitions and generated reports can contain prompts, email contents,
+account identifiers, local paths, and browsing history. **Do not commit
+them to a public repository.**
