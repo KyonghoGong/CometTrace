@@ -1,0 +1,244 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Verify engine integrity",
+      "type": "process",
+      "command": "${command:python.interpreterPath}",
+      "args": [
+        "-m",
+        "comettrace.provenance"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "PYTHONUTF8": "1"
+        }
+      },
+      "problemMatcher": [],
+      "windows": {
+        "command": "./.venv/Scripts/python.exe"
+      }
+    },
+    {
+      "label": "Show CLI help",
+      "type": "process",
+      "command": "${command:python.interpreterPath}",
+      "args": [
+        "-m",
+        "comettrace",
+        "--help"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "PYTHONUTF8": "1"
+        }
+      },
+      "problemMatcher": [],
+      "windows": {
+        "command": "./.venv/Scripts/python.exe"
+      }
+    },
+    {
+      "label": "Run unit tests",
+      "type": "process",
+      "command": "${command:python.interpreterPath}",
+      "args": [
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-v"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "PYTHONUTF8": "1"
+        }
+      },
+      "problemMatcher": [],
+      "windows": {
+        "command": "./.venv/Scripts/python.exe"
+      }
+    },
+    {
+      "label": "Reconstruct an acquisition",
+      "type": "process",
+      "command": "${command:python.interpreterPath}",
+      "args": [
+        "-m",
+        "comettrace",
+        "--input",
+        "${input:acquisition}",
+        "--output",
+        "${input:outputBase}.json",
+        "--html-output",
+        "${input:outputBase}.html"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "PYTHONUTF8": "1"
+        }
+      },
+      "problemMatcher": [],
+      "windows": {
+        "command": "./.venv/Scripts/python.exe"
+      }
+    },
+    {
+      "label": "Reconstruct one stage",
+      "type": "process",
+      "command": "${command:python.interpreterPath}",
+      "args": [
+        "-m",
+        "comettrace",
+        "--input",
+        "${input:acquisition}",
+        "--stage",
+        "${input:stage}",
+        "--output",
+        "${input:outputBase}.json",
+        "--html-output",
+        "${input:outputBase}.html"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "PYTHONUTF8": "1"
+        }
+      },
+      "problemMatcher": [],
+      "windows": {
+        "command": "./.venv/Scripts/python.exe"
+      }
+    },
+    {
+      "label": "Compare two snapshots",
+      "type": "process",
+      "command": "${command:python.interpreterPath}",
+      "args": [
+        "-m",
+        "comettrace",
+        "--before",
+        "${input:before}",
+        "--after",
+        "${input:after}",
+        "--output",
+        "${input:outputBase}.json",
+        "--html-output",
+        "${input:outputBase}.html"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "PYTHONUTF8": "1"
+        }
+      },
+      "problemMatcher": [],
+      "windows": {
+        "command": "./.venv/Scripts/python.exe"
+      }
+    },
+    {
+      "label": "Compare two stages",
+      "type": "process",
+      "command": "${command:python.interpreterPath}",
+      "args": [
+        "-m",
+        "comettrace",
+        "--before",
+        "${input:acquisition}",
+        "--after",
+        "${input:acquisition}",
+        "--before-stage",
+        "${input:beforeStage}",
+        "--after-stage",
+        "${input:afterStage}",
+        "--output",
+        "${input:outputBase}.json",
+        "--html-output",
+        "${input:outputBase}.html"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "PYTHONUTF8": "1"
+        }
+      },
+      "problemMatcher": [],
+      "windows": {
+        "command": "./.venv/Scripts/python.exe"
+      }
+    },
+    {
+      "label": "Run frozen v0.37",
+      "type": "process",
+      "command": "${command:python.interpreterPath}",
+      "args": [
+        "-m",
+        "comettrace",
+        "--engine",
+        "v037",
+        "--database",
+        "keyval-store",
+        "--input",
+        "${input:acquisition}",
+        "--output",
+        "${input:outputBase}.json",
+        "--html-output",
+        "${input:outputBase}.html"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "PYTHONUTF8": "1"
+        }
+      },
+      "problemMatcher": [],
+      "windows": {
+        "command": "./.venv/Scripts/python.exe"
+      }
+    }
+  ],
+  "inputs": [
+    {
+      "id": "acquisition",
+      "type": "promptString",
+      "description": "Path to your copied acquisition ZIP or directory"
+    },
+    {
+      "id": "stage",
+      "type": "promptString",
+      "description": "Stage ID to reconstruct"
+    },
+    {
+      "id": "before",
+      "type": "promptString",
+      "description": "Before acquisition path"
+    },
+    {
+      "id": "after",
+      "type": "promptString",
+      "description": "After acquisition path"
+    },
+    {
+      "id": "beforeStage",
+      "type": "promptString",
+      "description": "Before stage ID"
+    },
+    {
+      "id": "afterStage",
+      "type": "promptString",
+      "description": "After stage ID"
+    },
+    {
+      "id": "outputBase",
+      "type": "promptString",
+      "description": "Output path and basename without an extension",
+      "default": "output/reconstruction"
+    }
+  ]
+}

@@ -1,6 +1,2 @@
-python -m pip install Brotli
-python -m pip install zstandard zstd
-
-python -m pip install "https://github.com/cclgroupltd/ccl_simplesnappy/archive/3d085230baa8c46cf2090ebba29bf6e8eab31087.zip"
-
-python -m pip install --no-deps "https://github.com/cclgroupltd/ccl_chromium_reader/archive/ef840de30221c4d65bc96d2f4d9057e9ef2f526d.zip"
+& python "$PSScriptRoot/install_ccl_dependencies.py"
+exit $LASTEXITCODE
