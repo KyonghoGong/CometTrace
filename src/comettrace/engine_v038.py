@@ -220,6 +220,9 @@ def run_stage_v038(
     def note(code, message):
         diagnostics.append({"code": code, "message": message})
 
+    if not source_file_temporal_context["available"]:
+        note("source_file_metadata_unavailable", source_file_temporal_context["error"])
+
     stores = [d for d in db_selection["available_databases"] if d["has_target_store"]]
     selected = next(d for d in stores if d["name"] == selected_db)
     if db_selection["selection_mode"] == "auto" and len(stores) > 1:

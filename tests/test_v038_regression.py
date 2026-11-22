@@ -201,6 +201,25 @@ class TestFixAMultiStageZipDiscoveryAndScoping(unittest.TestCase):
             self.assertEqual(list(ctx["by_source_file"].keys()), ["000842.log"])
             self.assertTrue(ctx["stage_scoped"])
 
+            # A different spelling of the extraction root must preserve each stage's scope.
+            alias = ext / "S09_02" / ".."
+            for stage, filename in zip(stages, ["000823.log", "000842.log", "000859.log"]):
+                scoped = v38.build_scoped_source_file_temporal_context(zpath, alias, stage.leveldb_path)
+                self.assertEqual([f["zip_entry_path"] for f in scoped["files"]],
+                                 [f"{stage.rel_leveldb_posix}/{filename}"])
+
+    def test_missing_zip_stage_metadata_is_unavailable(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            selected = root / "selected"
+            selected.mkdir()
+            archive = root / "input.zip"
+            with zipfile.ZipFile(archive, "w") as zf:
+                zf.writestr(f"neighbor/{leg.TARGET_LEVELDB_NAME}/000001.log", b"neighbor")
+            ctx = v38.build_scoped_source_file_temporal_context(archive, root, selected)
+            self.assertFalse(ctx["available"])
+            self.assertIn("selected", ctx["error"])
+
 
 class TestFixEDownstreamV24V25Consistency(unittest.TestCase):
     def test_v24_v25_preserve_repeated_pdf_extension(self) -> None:

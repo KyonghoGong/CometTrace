@@ -94,7 +94,7 @@ class ReportOutputs(unittest.TestCase):
         self.html.write_bytes(b"old HTML")
         replace = os.replace
         def fail_last(src, dst):
-            if dst == self.html and src.name == "pending":
+            if src.name == "pending" and dst.exists() and dst.samefile(self.html):
                 raise PermissionError("locked")
             return replace(src, dst)
         with patch.object(outputs.os, "replace", side_effect=fail_last):

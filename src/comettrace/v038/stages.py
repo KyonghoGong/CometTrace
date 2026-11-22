@@ -7,7 +7,7 @@ import unicodedata
 import zipfile
 from dataclasses import dataclass
 from datetime import datetime, timezone
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Any
 
 from .. import legacy_engine as leg
@@ -179,8 +179,8 @@ def build_scoped_source_file_temporal_context(
 ) -> dict[str, Any]:
     """Strictly stage-scoped replacement for legacy _v34_build_source_file_temporal_context.
 
-    Fixes Bug 4: never matches sibling stages in a multi-stage ZIP via the broad
-    ``(TARGET_LEVELDB_NAME + "/") in entry_name`` fallback.
+    ZIP members must be direct children of the selected LevelDB directory,
+    regardless of the number of stages. Keep single_stage_archive for existing callers.
     """
     files: list[dict[str, Any]] = []
     original_input = Path(original_input)
@@ -196,33 +196,23 @@ def build_scoped_source_file_temporal_context(
 
     try:
         if leg.is_zip_path(original_input):
-            try:
-                rel_leveldb = leveldb_path.relative_to(root_path).as_posix().rstrip("/")
-            except Exception:
-                rel_leveldb = ""
-            prefix = (rel_leveldb + "/") if rel_leveldb else ""
+            # Windows may spell the same extraction root with a long name or an 8.3 alias.
+            rel_leveldb = leveldb_path.resolve(strict=True).relative_to(root_path.resolve(strict=True)).as_posix()
             with zipfile.ZipFile(original_input, "r") as zf:
                 for info in zf.infolist():
                     if info.is_dir():
                         continue
-                    entry_name = info.filename.replace("\\", "/").lstrip("./")
-                    base = Path(entry_name).name
-                    if not leg._v32_is_real_source_file(base):
+                    entry = PurePosixPath(info.filename.replace("\\", "/").lstrip("/"))
+                    if entry.parent.as_posix() != rel_leveldb:
                         continue
-                    if prefix:
-                        # Strict prefix match inside the selected stage directory ONLY.
-                        in_target = entry_name.startswith(prefix) and ("/" not in entry_name[len(prefix) :])
-                    elif single_stage_archive:
-                        in_target = (leg.TARGET_LEVELDB_NAME + "/") in entry_name
-                    else:
-                        in_target = False
-                    if not in_target:
+                    base = entry.name
+                    if not leg._v32_is_real_source_file(base):
                         continue
                     raw_time = leg._v34_zipinfo_local_iso(info)
                     add_file(
                         {
                             "source_file": base,
-                            "zip_entry_path": entry_name,
+                            "zip_entry_path": entry.as_posix(),
                             "modified_time_raw": raw_time,
                             "modified_time_interpretation": {
                                 "raw": raw_time,
@@ -236,6 +226,8 @@ def build_scoped_source_file_temporal_context(
                             "mtime_source": "zip_entry_metadata",
                         }
                     )
+            if not files:
+                raise ValueError(f"No LevelDB source-file metadata in ZIP directory {rel_leveldb!r}")
         else:
             for file_path in leveldb_path.iterdir():
                 if not file_path.is_file():

@@ -9,7 +9,7 @@
   "logic_changes_relative_to_engine": false,
   "patched_engine_file": "src/comettrace/engine_v038.py",
   "patched_engine_schema_version": "0.38",
-  "patched_engine_sha256": "0209045cff488c0b2056a003c91b894aab92cb31dd0044cdf4ee067cc4f08b0e",
+  "patched_engine_sha256": "e41e2b467fa2a7efe3a38e897b727e142faf556a7d6e2b9ff35691dac4e0b10f",
   "patched_engine_scope": "Per-turn UUID attribution, field-level provenance, verbatim workflow answers, download evidence and snapshot comparison; retains the 0.38 JSON schema.",
   "release_scope": "Source code only. Raw acquisitions and generated JSON/HTML reports are intentionally excluded.",
   "note": "The historical refactor_manifest.json pinned digest 6d9c702d... for an earlier engine revision labeled 0.27. The digest above identifies the frozen schema 0.37 engine shipped in this source release.",
@@ -46,8 +46,8 @@
     "v038/payloads.py": "d659e2a59f5c87bc4d4f0f3675db7a815bbc16ae71f6c32bc9d3b5aec5e15c77",
     "v038/records.py": "d8b5e73a36f53d041861c000b7a578e892f50431bc3b355d4f2820e2a4c6a0e2",
     "v038/runtime.py": "cccc7f47a24f39195ef70a318440a54b2c663390ca4240365e32fde70eece000",
-    "v038/stages.py": "8bbd68d8b1e6ce6877884a74cd9c0f9f8218c2bb0aec3bc539c78a4f3039b16c",
+    "v038/stages.py": "65da7ed5be284ef54249d3521500d8b65dd3a97f2240f87ae63fdcf3b7c0081a",
     "v038/workflow.py": "71e0978d46c2b5dc893be801a7336e771b4772f9da9cbc1a909484d8826ca5da"
   },
-  "modules_sha256": "3da9160ece472b92026dff9b244b13f0dc0b8d9ca6489d718ba3890255514c26"
+  "modules_sha256": "e17fcf0dde057db8fd8d87e938c99785db42cf29d65d3be62c5936e67ca069e1"
 }
