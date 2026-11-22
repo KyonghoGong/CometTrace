@@ -22,6 +22,7 @@ cd CometTrace
 py -3.12 -m venv .venv
 ```
 
+With the `py` launcher and only Python 3.11 installed, use `py -3.11 -m venv .venv`.
 If `py` is unavailable, use `python --version` to confirm Python 3.10,
 3.11, or 3.12, then run `python -m venv .venv` instead.
 
@@ -50,23 +51,37 @@ contains the structured results and evidence references.
 
 - **Separate acquisitions:** use different output names (for example,
   `case1.json` and `case2.json`) to keep both results.
-- **Multi-stage ZIP:** the named JSON describes the stages; the named HTML
-  becomes an index linking to each stage's JSON/HTML reports. Stage names
-  are kept distinct so reports do not silently overwrite each other.
-- **Specific stage or thread:** use `--stage` or `--target-reference` when
-  applicable. See [command examples](examples/commands.md).
-- **Default:** omit `--browser-only` to include Computer/ASI workflows that
-  use browser tools. That flag keeps the **legacy Browser Agent-only scope**.
+- For a **multi-stage ZIP**, each stage gets its own JSON and HTML files.
+  The top-level JSON lists their paths, and the top-level HTML index links
+  to each stage's HTML report.
+- To analyze **one stage**, list the stage IDs, then replace `<stage-id>`
+  with an ID from the list.
+
+  ```powershell
+  .\.venv\Scripts\python.exe -m comettrace --input "C:\Data\acquisition.zip" --list-stages
+  .\.venv\Scripts\python.exe -m comettrace --input "C:\Data\acquisition.zip" --stage "<stage-id>" --output "output\stage.json" --html-output "output\stage.html"
+  ```
+
+- To filter by reference, see the [`--target-reference` examples](examples/commands.md).
+- The legacy `--browser-only` filter skips Computer/ASI expansion, including
+  workflows that use browser tools. Ordinary Search records can remain.
+  Omit the flag for the full analysis.
 
 The original command form is unchanged: `--input`, `--output`, and
 `--html-output`.
 
 ## 3. Install on Ubuntu / Linux
 
+Check that `python3 --version` reports 3.10, 3.11, or 3.12 before continuing.
+The pip version check below confirms the virtual environment is ready.
+If Ubuntu's default Python lacks `venv` or `ensurepip`, run
+`sudo apt install python3-venv` and create the environment again.
+
 ```bash
 git clone https://github.com/KyonghoGong/CometTrace.git
 cd CometTrace
 python3 -m venv .venv
+.venv/bin/python -m pip --version
 .venv/bin/python scripts/install_ccl_dependencies.py
 .venv/bin/python -m pip install .
 .venv/bin/python -m pip check
@@ -74,7 +89,7 @@ mkdir -p output
 .venv/bin/python -m comettrace --input "/path/to/acquisition.zip" --output "output/case.json" --html-output "output/case.html"
 ```
 
-Use Python 3.10–3.12. The GitHub CI matrix covers **Windows and Ubuntu**
+The GitHub CI matrix covers **Windows and Ubuntu**
 with Python 3.10, 3.11, and 3.12. macOS is not part of that tested matrix.
 
 ## 4. What the results do—and do not—mean
