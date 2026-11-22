@@ -2,8 +2,8 @@ cff-version: 1.2.0
 type: software
 
 message: >-
-  If you use CometTrace, please cite the accompanying paper and identify the
-  software version used in your analysis. Thank you!
+  Please cite the accompanying manuscript as under review at IEEE Access
+  and identify the CometTrace version used in your analysis.
 
 title: "CometTrace"
 
@@ -38,7 +38,8 @@ keywords:
   - "Perplexity Comet"
 
 preferred-citation:
-  type: article
+  type: unpublished
+  status: submitted
 
   title: >-
     Reconstructing Agentic AI Behavior from Browser Artifacts:
@@ -50,5 +51,3 @@ preferred-citation:
 
     - family-names: "Joun"
       given-names: "Jihun"
-
-  year: 2026

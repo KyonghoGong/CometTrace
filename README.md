@@ -51,9 +51,9 @@ contains the structured results and evidence references.
 
 - **Separate acquisitions:** use different output names (for example,
   `case1.json` and `case2.json`) to keep both results.
-- For a **multi-stage ZIP**, each stage gets its own JSON and HTML files.
-  The top-level JSON lists their paths, and the top-level HTML index links
-  to each stage's HTML report.
+- For a **multi-stage ZIP**, the top-level JSON lists each stage's JSON path.
+  With `--html-output`, it also lists each stage's HTML path, and the
+  top-level HTML index links to those reports.
 - To analyze **one stage**, list the stage IDs, then replace `<stage-id>`
   with an ID from the list.
 
