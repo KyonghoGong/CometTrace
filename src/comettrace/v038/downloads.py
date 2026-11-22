@@ -7,7 +7,6 @@ from typing import Any
 
 from .. import legacy_engine as leg
 
-
 PDF_FILENAME_RE_V38 = re.compile(r"(?<![\w.-])[\w-][\w.-]*?(?:\.pdf)+(?![\w-]|\.\w)", re.IGNORECASE)
 
 
@@ -21,12 +20,16 @@ _PDF_LABEL = (
 )
 
 
+_PDF_LABEL_START = re.compile(_PDF_LABEL, re.IGNORECASE)
+# An unquoted label ends at a prose boundary. Keep dots inside basenames.
 _PDF_LABELED = re.compile(
-    _PDF_LABEL + r'[*\x60"\x27]*([^<>:"/\\|?*\x60\r\n]+?' + _PDF_END + r")", re.IGNORECASE
+    r"(?!not\s+(?:yet\s+)?(?:known|confirmed|available|determined|recorded)\b)"
+    r'((?:[^<>:"/\\|?*\x60\r\n;；,，.。！!]|[.](?=\S))+?' + _PDF_END + r")",
+    re.IGNORECASE,
 )
 
 
-_PDF_QUOTED = re.compile(r'([\x60"\x27])([^<>:"/\\|?*\x60\r\n]+?' + _PDF_END + r")\1", re.IGNORECASE)
+_PDF_QUOTED = re.compile(r'(\*\*|[\x60"\x27])([^<>:"/\\|?*\x60\r\n]+?' + _PDF_END + r")\1", re.IGNORECASE)
 
 
 _DOWNLOAD_NEGATION_OR_FAILURE_PATTERNS = [
@@ -66,6 +69,8 @@ _DOWNLOAD_FAILURE_PATTERNS_V38 = [
     r"\bunable\s+to\s+download\b",
     r"\bdownload\s+failed\b",
     r"\bdownload\s+error\b",
+    # Require the blocked predicate to follow the named PDF in the same clause.
+    r"\b(?:saving|downloading)\s+(?:(?!\.\s)[^;:!?\r\n])*?\.pdf[\x60*\x27\"]*\s+(?:was|is)\s+blocked\b",
     r"다운로드\s*실패",
 ]
 
@@ -89,8 +94,27 @@ def _v38_cleanup_pdf_filename(raw: str) -> str | None:
     return None
 
 
+def _labelled_pdfs(text: str):
+    """Yield a filename span or None for each label with an unresolved value."""
+    for label in _PDF_LABEL_START.finditer(text):
+        pos = label.end()
+        # A bold heading may end immediately after its colon.
+        closing_markup = re.match(r"\*\*[ \t]+", text[pos:])
+        if closing_markup:
+            pos += closing_markup.end()
+        if text[pos : pos + 2] == "**" and text[pos + 2 : pos + 3] in ('"', "'", chr(96)):
+            pos += 2
+        quoted = _PDF_QUOTED.match(text, pos)
+        match = quoted or _PDF_LABELED.match(text, pos)
+        if match is None:
+            yield None
+        else:
+            group = 2 if quoted else 1
+            yield match.start(group), match.end(group), match.group(group)
+
+
 def _named_pdfs(text):
-    matches = [(m.start(1), m.end(1), m.group(1)) for m in _PDF_LABELED.finditer(text)]
+    matches = [span for span in _labelled_pdfs(text) if span is not None]
     matches.extend((m.start(2), m.end(2), m.group(2)) for m in _PDF_QUOTED.finditer(text))
     return matches
 
@@ -141,9 +165,12 @@ def _v23_reported_downloaded_filename_v038(thread: dict[str, Any]) -> str | None
     final = leg._v23_final_text(thread)
     if not _has_positive_download_completion_v038(final):
         return None
-    source = _join_wrapped_pdf_extension(final.replace("**", ""))
-    names = {m.group(1) for m in _PDF_LABELED.finditer(source)}
-    if names:
+    source = _join_wrapped_pdf_extension(final)
+    labels = list(_labelled_pdfs(source))
+    if labels:
+        # A PDF in another clause can be a reference copy. Its presence does
+        # not establish the missing value of a download filename label.
+        names = {span[2] for span in labels if span is not None}
         return next(iter(names)) if len(names) == 1 else None
     pdfs = extract_pdf_filenames_v038(source)
     return pdfs[0] if len(pdfs) == 1 else None
