@@ -2,6 +2,15 @@
 
 *Comet Browser/Computer Artifact Reconstructor*
 
+Version 0.38.4 writes report schema 0.38. Select `--engine v037` to run
+the frozen schema 0.37 engine. Version 0.38.4 preserves verbatim answers in
+completed nested workflows when the retained child result is unambiguous.
+It uses the owning entry's backend UUID and narrows recipient and calendar
+field attribution when a prompt or unlabelled form input is ambiguous.
+
+For a staged comparison, supply
+`--before-stage` and `--after-stage` alongside the two input paths.
+
 CometTrace is an open-source forensic reconstruction tool that reconstructs
 per-thread behavioral timelines from Perplexity Comet's IndexedDB LevelDB
 artifacts and annotates the recovered evidence with persistence state.
@@ -33,13 +42,34 @@ used to generate the original paper-associated outputs.
 
 ## Installation
 
-Clone the repository and install the pinned forensic dependencies:
+From the repository root, create a Python 3.10–3.12 virtual environment.
 
-```bash
-git clone https://github.com/KyonghoGong/CometTrace.git
-cd CometTrace
-bash scripts/install_ccl_dependencies.sh
-python -m pip install -e .
+Windows PowerShell:
+
+```powershell
+py -3.12 -m venv .venv
+.\.venv\Scripts\python.exe scripts/install_ccl_dependencies.py
+.\.venv\Scripts\python.exe -m pip install .
+```
+
+Linux or macOS:
+
+```sh
+python3.12 -m venv .venv
+.venv/bin/python scripts/install_ccl_dependencies.py
+.venv/bin/python -m pip install .
+```
+
+Use that environment's Python for the checks below. In VS Code, select the
+environment with **Python: Select Interpreter** and open a new terminal.
+See [VS Code usage](docs/VS_CODE_USAGE.md) for the F5 configurations and tasks.
+
+```sh
+python -m pip check
+python -m comettrace.provenance
+python tools/verify_release.py
+python -m unittest discover -s tests -v
+python -m comettrace --help
 ```
 
 ## Quick Start
@@ -49,14 +79,54 @@ reconstruction reports:
 
 ```bash
 comettrace \
-  --input <acquisition.zip> \
+  --input "path/to/acquisition.zip" \
   --output reconstruction.json \
   --html-output reconstruction.html
 ```
 
+The input is your own copied acquisition ZIP or directory. A reference filter
+can legitimately return an empty `threads` list with exit code 0. Inspect
+`source.database_selection` for the selected database, its
+`perplexity_cache_record_count` in `available_databases`, and the selection
+reason. A readable store with zero recognized keys limits what can be inferred.
+An unavailable database or object store fails the command. For staged bundles,
+inspect the individual stage reports.
+
 Additional examples, including Browser Control, Computer mode, direct LevelDB
 input, and deletion-related reconstruction, are available in
 `examples/commands.md`.
+
+## Interpreting schema 0.38
+
+In 0.38.4, `classification.execution_mode` remains a compatibility category.
+`observed_backend` contains the owning entry's retained mode/model fields and
+source reference. `observed_tool_events` identifies recorded workflow tool steps.
+An invocation alone does not establish a successful browser action. A browser
+skill link in the query prefix is recorded separately. The tested ASI records
+do not identify which UI control the user selected. Read `ui_selection.status`
+before interpreting a backend category as a UI mode.
+
+`--browser-only` retains the historical scope: it skips Computer/ASI groups
+and list-only promotion, including ASI workflows that invoked browser tools.
+Search records can remain. The CLI prints this limitation to stderr and includes
+the omitted grouped browser-tool IDs in JSON diagnostics. Omit the option to
+include those tasks. Use `--database` to inspect other available accounts.
+
+Completed workflow answer payloads and completed answer markdown can supply a
+full answer. An unsupported structure can yield an unavailable answer. Explicit
+sidebar answer previews, including short strings, are marked as previews.
+Reported filename extraction from answer prose targets PDF. Explicit labels
+or matching quotes delimit names containing spaces. Extension case and Unicode
+are preserved. Browser History is a separate source. A completed download claim
+and a corroborating History row are separate fields.
+
+Stage JSON contains `diagnostics` and `source.history_read_status`.
+Distinguish a missing History file, a read failure, a successfully read empty
+table, an unrecognized store schema, and a reference filter with no matches.
+Readable empty results retain exit 0; inaccessible stores and failed database
+selection retain an error exit. These behaviors were tested on retained
+acquisitions and synthetic schema controls. For concurrent analysis, run
+separate CLI processes; the patch layer temporarily changes module globals.
 
 ## Engine freeze policy
 

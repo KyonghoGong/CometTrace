@@ -1,48 +1,38 @@
-"""CometTrace package metadata.
+"""CometTrace package metadata (v0.38.4).
 
-CometTrace is the open-source forensic reconstruction tool accompanying the
-paper "Reconstructing Agentic AI Behavior from Browser Artifacts: A Forensic
-Case Study of Perplexity Comet".
+The original paper-associated analytical engine remains release-frozen and
+byte-identical in ``src/comettrace/legacy_engine.py`` (schema 0.37,
+SHA-256 ``f58b3c3683c4f05e5be2cb7e75080e8e26ef37b5e7e973030d5b921ca5cdaf80``).
 
-The analytical reconstruction engine is isolated in
-``src/comettrace/legacy_engine.py`` and is release-frozen.
-
-The SHA-256 digest recorded in this module verifies engine-file integrity. It
-does not independently establish:
-
-- byte-identical reproduction of archived paper-associated reports;
-- equivalence across different parser dependency revisions;
-- equivalence across different Python versions or operating systems; or
-- independent reproduction of the paper's numerical results.
-
-Packaging, documentation, provenance, and entry-point verification layers are
-maintained separately from the frozen analytical engine.
+Phase 2 fixes for multi-stage ZIP discovery, account-scoped IndexedDB database
+discovery, multi-thread list-record attribution, download task classification,
+and repeated-extension PDF filename preservation are isolated in
+``src/comettrace/engine_v038.py`` (schema 0.38).
 """
 
 
-__version__ = "0.37.0.post1"
+__version__ = "0.38.4"
 
-ENGINE_SCHEMA_VERSION = "0.37"
+ENGINE_SCHEMA_VERSION = "0.38"
+LEGACY_ENGINE_SCHEMA_VERSION = "0.37"
 
-# SHA-256 of src/comettrace/legacy_engine.py as pinned by this source release.
-#
-# The historical file docs/refactor_manifest.historical.json records a
-# different digest beginning with 6d9c702d for an earlier engine revision
-# identified as schema 0.27. That historical digest must not be used to verify
-# the current schema 0.37 engine.
-#
-# This digest verifies engine-file integrity only. Complete report
-# reproducibility additionally depends on the parser dependency commits,
-# Python version, operating system, acquisition, and invocation parameters.
-
+# Frozen SHA-256 of src/comettrace/legacy_engine.py (schema 0.37 baseline).
 ENGINE_SHA256 = (
     "f58b3c3683c4f05e5be2cb7e75080e8e"
     "26ef37b5e7e973030d5b921ca5cdaf80"
+)
+
+# Pinned SHA-256 of src/comettrace/engine_v038.py (schema 0.38 patched engine).
+PATCHED_ENGINE_SHA256 = (
+    "86f86ea1b857c879ab93e5999ebe8a08"
+    "2735edc34cb917046097396badc26c39"
 )
 
 
 __all__ = [
     "__version__",
     "ENGINE_SCHEMA_VERSION",
+    "LEGACY_ENGINE_SCHEMA_VERSION",
     "ENGINE_SHA256",
+    "PATCHED_ENGINE_SHA256",
 ]

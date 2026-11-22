@@ -1,9 +1,12 @@
 {
-  "python.analysis.extraPaths": ["src"],
+  "python.defaultInterpreterPath": "${workspaceFolder}/.venv",
+  "python.testing.unittestEnabled": true,
+  "python.testing.unittestArgs": [
+    "-s",
+    "tests",
+    "-v"
+  ],
   "python.testing.pytestEnabled": false,
-  "terminal.integrated.env.windows": { "PYTHONPATH": "${workspaceFolder}/src" },
-  "terminal.integrated.env.linux": { "PYTHONPATH": "${workspaceFolder}/src" },
-  "terminal.integrated.env.osx": { "PYTHONPATH": "${workspaceFolder}/src" },
   "files.exclude": {
     "**/__pycache__": true,
     "**/*.pyc": true

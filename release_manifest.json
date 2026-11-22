@@ -1,11 +1,16 @@
 {
   "package": "comettrace",
-  "package_version": "0.37.0.post1",
+  "package_version": "0.38.4",
+  "baseline_commit": "0cb17124a3e96f624896bcf33caed6f8afc68c89",
   "engine_file": "src/comettrace/legacy_engine.py",
   "engine_schema_version": "0.37",
   "engine_sha256": "f58b3c3683c4f05e5be2cb7e75080e8e26ef37b5e7e973030d5b921ca5cdaf80",
   "engine_frozen": true,
   "logic_changes_relative_to_engine": false,
+  "patched_engine_file": "src/comettrace/engine_v038.py",
+  "patched_engine_schema_version": "0.38",
+  "patched_engine_sha256": "86f86ea1b857c879ab93e5999ebe8a082735edc34cb917046097396badc26c39",
+  "patched_engine_scope": "Per-turn UUID attribution, field-level provenance, verbatim workflow answers, download evidence and snapshot comparison; retains the 0.38 JSON schema.",
   "release_scope": "Source code only. Raw acquisitions and generated JSON/HTML reports are intentionally excluded.",
   "note": "The historical refactor_manifest.json pinned digest 6d9c702d... for an earlier engine revision labeled 0.27. The digest above identifies the frozen schema 0.37 engine shipped in this source release.",
   "paper_environment": {

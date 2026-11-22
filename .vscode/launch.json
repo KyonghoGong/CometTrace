@@ -1,82 +1,195 @@
 {
-  // CometTrace VS Code launch configurations.
-  //
-  // Configurations 1 and 2 verify package metadata and engine integrity.
-  // They do not require a forensic acquisition or the CCL parsing dependency.
-  //
-  // Configurations 3 and 4 import the reconstruction engine and therefore
-  // require the dependencies installed by:
-  //
-  //   .\scripts\install_ccl_dependencies.ps1
-  //   python -m pip install -e .
-  //
-  // In the study environment, the observed Windows profile layout was:
-  //
-  //   %LOCALAPPDATA%/Perplexity/Comet/User Data/<Profile>/
-  //
-  // where <Profile> was the active profile directory, such as Default,
-  // Profile 1, or Profile 10.
-  //
-  // For forensic examination, use a copied profile or acquisition ZIP rather
-  // than a live browser profile.
-
   "version": "0.2.0",
-
   "configurations": [
     {
-      "name": "1. Verify engine integrity (SHA-256)",
+      "name": "Verify engine integrity",
       "type": "debugpy",
       "request": "launch",
       "module": "comettrace.provenance",
-      "console": "integratedTerminal",
       "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
       "env": {
-        "PYTHONPATH": "${workspaceFolder}/src"
-      }
+        "PYTHONUTF8": "1"
+      },
+      "args": []
     },
     {
-      "name": "2. Print package metadata",
-      "type": "debugpy",
-      "request": "launch",
-      "program": "${workspaceFolder}/tools/check_metadata.py",
-      "console": "integratedTerminal",
-      "cwd": "${workspaceFolder}",
-      "env": {
-        "PYTHONPATH": "${workspaceFolder}/src"
-      }
-    },
-    {
-      "name": "3. Show CometTrace CLI help (requires CCL)",
+      "name": "Show CLI help",
       "type": "debugpy",
       "request": "launch",
       "module": "comettrace",
-      "console": "integratedTerminal",
       "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
       "env": {
-        "PYTHONPATH": "${workspaceFolder}/src"
+        "PYTHONUTF8": "1"
       },
       "args": [
         "--help"
       ]
     },
     {
-      "name": "4. Run CometTrace (requires CCL and acquisition)",
+      "name": "Run unit tests",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "unittest",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "env": {
+        "PYTHONUTF8": "1"
+      },
+      "args": [
+        "discover",
+        "-s",
+        "tests",
+        "-v"
+      ]
+    },
+    {
+      "name": "Reconstruct an acquisition",
       "type": "debugpy",
       "request": "launch",
       "module": "comettrace",
-      "console": "integratedTerminal",
       "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
       "env": {
-        "PYTHONPATH": "${workspaceFolder}/src"
+        "PYTHONUTF8": "1"
       },
       "args": [
         "--input",
-        "C:/Path/To/Copied-Profile-or-Acquisition.zip",
+        "${input:acquisition}",
         "--output",
-        "output/reconstruction.json",
+        "${input:outputBase}.json",
         "--html-output",
-        "output/reconstruction.html"
+        "${input:outputBase}.html"
       ]
+    },
+    {
+      "name": "Reconstruct one stage",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "comettrace",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "env": {
+        "PYTHONUTF8": "1"
+      },
+      "args": [
+        "--input",
+        "${input:acquisition}",
+        "--stage",
+        "${input:stage}",
+        "--output",
+        "${input:outputBase}.json",
+        "--html-output",
+        "${input:outputBase}.html"
+      ]
+    },
+    {
+      "name": "Compare two snapshots",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "comettrace",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "env": {
+        "PYTHONUTF8": "1"
+      },
+      "args": [
+        "--before",
+        "${input:before}",
+        "--after",
+        "${input:after}",
+        "--output",
+        "${input:outputBase}.json",
+        "--html-output",
+        "${input:outputBase}.html"
+      ]
+    },
+    {
+      "name": "Compare two stages",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "comettrace",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "env": {
+        "PYTHONUTF8": "1"
+      },
+      "args": [
+        "--before",
+        "${input:acquisition}",
+        "--after",
+        "${input:acquisition}",
+        "--before-stage",
+        "${input:beforeStage}",
+        "--after-stage",
+        "${input:afterStage}",
+        "--output",
+        "${input:outputBase}.json",
+        "--html-output",
+        "${input:outputBase}.html"
+      ]
+    },
+    {
+      "name": "Run frozen v0.37",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "comettrace",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "env": {
+        "PYTHONUTF8": "1"
+      },
+      "args": [
+        "--engine",
+        "v037",
+        "--database",
+        "keyval-store",
+        "--input",
+        "${input:acquisition}",
+        "--output",
+        "${input:outputBase}.json",
+        "--html-output",
+        "${input:outputBase}.html"
+      ]
+    }
+  ],
+  "inputs": [
+    {
+      "id": "acquisition",
+      "type": "promptString",
+      "description": "Path to your copied acquisition ZIP or directory"
+    },
+    {
+      "id": "stage",
+      "type": "promptString",
+      "description": "Stage ID to reconstruct"
+    },
+    {
+      "id": "before",
+      "type": "promptString",
+      "description": "Before acquisition path"
+    },
+    {
+      "id": "after",
+      "type": "promptString",
+      "description": "After acquisition path"
+    },
+    {
+      "id": "beforeStage",
+      "type": "promptString",
+      "description": "Before stage ID"
+    },
+    {
+      "id": "afterStage",
+      "type": "promptString",
+      "description": "After stage ID"
+    },
+    {
+      "id": "outputBase",
+      "type": "promptString",
+      "description": "Output path and basename without an extension",
+      "default": "output/reconstruction"
     }
   ]
 }

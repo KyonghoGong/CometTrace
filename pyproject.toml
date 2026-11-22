@@ -5,11 +5,10 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "comettrace"
 
-# The package version follows the frozen reconstruction engine's report
-# schema_version 0.37. The ".post1" suffix identifies packaging,
-# documentation, and release-layer changes that do not modify the frozen
-# reconstruction engine.
-version = "0.37.0.post1"
+# Package version 0.38.0 introduces the v0.38 patch layer (engine_v038.py,
+# schema_version 0.38) while keeping legacy_engine.py (schema_version 0.37)
+# byte-identical and invokable via --engine v037.
+version = "0.38.4"
 
 description = "Open-source forensic tool for reconstructing Perplexity Comet Browser Control and Computer-mode behavior from IndexedDB LevelDB artifacts."
 
@@ -58,9 +57,9 @@ classifiers = [
 # load time.
 
 dependencies = [
-  "Brotli>=1.1.0",
+  "Brotli>=1.1.0,<=1.2.0",
   "zstandard>=0.22.0",
-  "zstd>=1.5.5"
+  "zstd==1.5.7.2"
 ]
 
 [project.scripts]
