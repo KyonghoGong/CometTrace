@@ -8,7 +8,7 @@ name = "comettrace"
 # Package version 0.38.0 introduces the v0.38 patch layer (engine_v038.py,
 # schema_version 0.38) while keeping legacy_engine.py (schema_version 0.37)
 # byte-identical and invokable via --engine v037.
-version = "0.38.5"
+version = "0.38.6"
 
 description = "Open-source forensic tool for reconstructing Perplexity Comet Browser Control and Computer-mode behavior from IndexedDB LevelDB artifacts."
 

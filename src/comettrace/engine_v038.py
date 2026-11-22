@@ -5,7 +5,8 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-import re
+from contextlib import redirect_stdout
+from io import StringIO
 import sys
 import tempfile
 import zipfile
@@ -67,6 +68,7 @@ from .v038.records import (
     primary_thread_id_from_key_v038,
 )
 from .v038.runtime import _v038_runtime_patches
+from .v038.outputs import check_destinations, save_reports, staged_files
 from .v038.stages import (
     DiscoveredStage,
     _find_sibling_history,
@@ -88,7 +90,7 @@ from .v038.workflow import (
 )
 
 SCHEMA_VERSION_V038 = "0.38"
-ENGINE_REVISION_V038 = "v0.38.5"
+ENGINE_REVISION_V038 = "v0.38.6"
 
 
 def resolve_database_selection(
@@ -479,6 +481,12 @@ def _print_diagnostics(stages):
 def main(argv: list[str] | None = None) -> None:
     parser = build_parser_v038()
     args = parser.parse_args(argv)
+    paths = [args.output] + ([args.html_output] if args.html_output else [])
+    if not args.list_stages:
+        try:
+            check_destinations(paths)
+        except ValueError as exc:
+            parser.error(str(exc))
 
     if args.engine in {"v037", "legacy"}:
         # Delegate directly to untouched frozen legacy_engine CLI
@@ -499,8 +507,17 @@ def main(argv: list[str] | None = None) -> None:
 
         old_argv = sys.argv
         try:
-            sys.argv = [old_argv[0]] + forwarded
-            leg.main()
+            messages = StringIO()
+            with staged_files(paths) as pending:
+                sys.argv = [old_argv[0], *forwarded, "--output", str(pending[0])]
+                if args.html_output:
+                    sys.argv.extend(["--html-output", str(pending[1])])
+                with redirect_stdout(messages):
+                    leg.main()
+            text = messages.getvalue()
+            for temp_path, destination in zip(pending, paths):
+                text = text.replace(str(temp_path), str(destination))
+            print(text, end="")
         finally:
             sys.argv = old_argv
         return
@@ -556,9 +573,7 @@ def main(argv: list[str] | None = None) -> None:
             "after_reconstruction": after,
             "snapshot_comparison": comparison,
         }
-        leg.write_json(args.output, comp)
-        if args.html_output:
-            leg.render_html_report(comp, args.html_output)
+        save_reports(comp, args.output, args.html_output)
         print(f"Wrote comparison report to {args.output}")
         return
 
@@ -579,23 +594,8 @@ def main(argv: list[str] | None = None) -> None:
 
     _print_diagnostics(stage_reports)
     if primary.get("report_kind") == "multi_stage_acquisition_bundle":
-        out_path = args.output
-        out_path.parent.mkdir(parents=True, exist_ok=True)
-        for idx, (st, rep) in enumerate(stage_reports):
-            safe_id = re.sub(r"[^A-Za-z0-9._\-]+", "_", st.stage_id)
-            st_json = out_path.with_name(f"{out_path.stem}__{safe_id}{out_path.suffix}")
-            leg.write_json(st_json, rep)
-            primary["stages"][idx]["output_json"] = str(st_json)
-            if args.html_output:
-                st_html = args.html_output.with_name(
-                    f"{args.html_output.stem}__{safe_id}{args.html_output.suffix}"
-                )
-                leg.render_html_report(rep, st_html)
-                primary["stages"][idx]["output_html"] = str(st_html)
-        leg.write_json(out_path, primary)
-        print(f"Wrote multi-stage bundle ({len(stage_reports)} independent stages) to {out_path}")
+        save_reports(primary, args.output, args.html_output, stage_reports)
+        print(f"Wrote multi-stage bundle ({len(stage_reports)} independent stages) to {args.output}")
     else:
-        leg.write_json(args.output, primary)
-        if args.html_output:
-            leg.render_html_report(primary, args.html_output)
+        save_reports(primary, args.output, args.html_output)
         print(f"Wrote v0.38 report to {args.output}")

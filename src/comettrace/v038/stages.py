@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+import unicodedata
 import zipfile
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -112,8 +113,8 @@ def discover_leveldb_stages(root_path: Path) -> list[DiscoveredStage]:
         )
 
     raw_stages: list[DiscoveredStage] = []
-    used_ids: dict[str, int] = {}
-    for ldb in matches:
+    used_ids: set[str] = set()
+    for ldb in sorted(matches, key=lambda path: path.as_posix()):
         try:
             rel = ldb.relative_to(root_path)
             rel_posix = rel.as_posix()
@@ -122,11 +123,12 @@ def discover_leveldb_stages(root_path: Path) -> list[DiscoveredStage]:
             rel_posix = ldb.name
         stage_id, stage_role = _infer_stage_id_and_role(rel, len(matches))
         # Ensure unique stage_id even if duplicate leaf names exist
-        if stage_id in used_ids:
-            used_ids[stage_id] += 1
-            stage_id = f"{stage_id}_{used_ids[stage_id]}"
-        else:
-            used_ids[stage_id] = 1
+        base = stage_id
+        suffix = 1
+        while unicodedata.normalize("NFC", stage_id).casefold() in used_ids:
+            suffix += 1
+            stage_id = f"{base}_{suffix}"
+        used_ids.add(unicodedata.normalize("NFC", stage_id).casefold())
         blob = ldb.parent / leg.TARGET_BLOB_NAME
         hist = _find_sibling_history(ldb, root_path)
         raw_stages.append(

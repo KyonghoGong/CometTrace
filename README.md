@@ -2,8 +2,8 @@
 
 *Comet Browser/Computer Artifact Reconstructor*
 
-Version 0.38.5 writes report schema 0.38. Select `--engine v037` to run
-the frozen schema 0.37 engine. Version 0.38.5 preserves verbatim answers in
+Version 0.38.6 writes report schema 0.38. Select `--engine v037` to run
+the frozen schema 0.37 engine. The default engine preserves verbatim answers in
 completed nested workflows when the retained child result is unambiguous.
 It uses the owning entry's backend UUID and narrows recipient and calendar
 field attribution when a prompt or unlabelled form input is ambiguous.
@@ -44,10 +44,24 @@ used to generate the original paper-associated outputs.
 
 From the repository root, create a Python 3.10–3.12 virtual environment.
 
-Windows PowerShell:
+In Windows PowerShell, choose one command to create the environment. With
+the Python launcher and Python 3.12 installed, use:
 
 ```powershell
 py -3.12 -m venv .venv
+```
+
+If your installation provides `python` directly, verify that it reports
+Python 3.10, 3.11 or 3.12, then create the environment:
+
+```powershell
+python --version
+python -m venv .venv
+```
+
+For either Windows setup, run these two commands:
+
+```powershell
 .\.venv\Scripts\python.exe scripts/install_ccl_dependencies.py
 .\.venv\Scripts\python.exe -m pip install .
 ```
@@ -93,6 +107,33 @@ JSON contains per-thread records and evidence locations. HTML displays the recon
 for review. Keep the acquisitions, report outputs and local account identifiers private.
 The release manifest pins the entry-point digest and all schema 0.38 evidence modules.
 
+For a single stage, the named JSON and optional HTML each contain that stage.
+For an automatic multi-stage run, the named JSON maps each stage and source
+directory to its files. The named HTML is an index linking to the stage HTML
+files beside it. Stage filenames preserve Unicode and spaces and receive a
+suffix when names collide. Supply distinct JSON and HTML paths. Reusing a
+basename replaces that run's reports after all requested reports render.
+
+## Installing from the cumulative patch
+
+The ordinary clone of the release commit and the public source ZIP are ready
+to install. To reconstruct the same source from the published baseline on
+Windows, place the cumulative patch in the current directory and use a new
+checkout as shown below. Each Git command must succeed before continuing.
+The baseline predates the LF attributes. Applying to the index first lets
+Git use the release attributes from the first write to disk.
+
+```powershell
+git clone --no-checkout https://github.com/KyonghoGong/CometTrace.git CometTrace-patched
+cd CometTrace-patched
+git read-tree 0cb17124a3e96f624896bcf33caed6f8afc68c89
+git apply --cached --check --whitespace=error-all ../CometTrace-0cb17124-to-0.38.6.patch
+git apply --cached --whitespace=error-all ../CometTrace-0cb17124-to-0.38.6.patch
+git checkout-index --all
+```
+
+Run the installation and verification commands above in `CometTrace-patched`.
+
 ## Quick Start
 
 Run CometTrace against a browser acquisition and generate JSON and HTML
@@ -119,7 +160,7 @@ input, and deletion-related reconstruction, are available in
 
 ## Interpreting schema 0.38
 
-In 0.38.5, `classification.execution_mode` remains a compatibility category.
+In schema 0.38, `classification.execution_mode` remains a compatibility category.
 `observed_backend` contains the owning entry's retained mode/model fields and
 source reference. `observed_tool_events` identifies recorded workflow tool steps.
 An invocation alone does not establish a successful browser action. A browser
