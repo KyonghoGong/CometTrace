@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 import comettrace
+from comettrace.provenance import module_file_hashes, modules_digest
 
 
 def verify(root):
@@ -29,6 +30,12 @@ def verify(root):
                 or actual != pinned or manifest[name + "_sha256"] != actual):
             raise SystemExit(f"{name} manifest/source checksum mismatch ({actual})")
         print(f"{path.as_posix()}  {actual}  VERIFIED")
+    modules = module_file_hashes(root / "src" / "comettrace")
+    if (modules != manifest["module_files"]
+            or modules_digest(modules) != manifest["modules_sha256"]
+            or modules_digest(modules) != comettrace.MODULES_SHA256):
+        raise SystemExit("Reconstruction module manifest/source checksum mismatch")
+    print(f"{len(modules)} schema 0.38 module files VERIFIED")
 
 
 if __name__ == "__main__":

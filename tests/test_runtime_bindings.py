@@ -19,4 +19,3 @@ class RuntimeBindings(unittest.TestCase):
                 self.assertIs(getattr(legacy_engine, key), outer[key])
         for key in handlers:
             self.assertIs(getattr(legacy_engine, key), original[key])
-

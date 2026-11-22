@@ -1,4 +1,6 @@
-# Refactoring Notes
+# Historical packaging notes for schema 0.37
+
+These notes describe the original packaging of the frozen engine. For the current schema 0.38 modules, tests and runtime bindings, see [Architecture](ARCHITECTURE.md).
 
 ## Purpose
 

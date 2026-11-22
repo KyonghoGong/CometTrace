@@ -1,4 +1,5 @@
 """Coordinate schema 0.38 reconstruction and expose the historical engine API."""
+
 from __future__ import annotations
 
 import argparse
@@ -12,12 +13,12 @@ from pathlib import Path
 from typing import Any
 
 from . import legacy_engine as leg
+from .provenance import module_file_hashes, modules_digest
 from .v038.database import (
-    select_database,
     discover_query_databases,
+    select_database,
 )
 from .v038.downloads import (
-    PDF_FILENAME_RE_V38,
     _DOWNLOAD_COMPLETION_PATTERNS_V38,
     _DOWNLOAD_FAILURE_PATTERNS_V38,
     _DOWNLOAD_INTERRUPTED_PATTERNS_V38,
@@ -26,6 +27,7 @@ from .v038.downloads import (
     _PDF_LABEL,
     _PDF_LABELED,
     _PDF_QUOTED,
+    PDF_FILENAME_RE_V38,
     _download_negative_status,
     _has_any_regex,
     _has_positive_download_completion_v038,
@@ -39,8 +41,8 @@ from .v038.downloads import (
     extract_pdf_filenames_v038,
 )
 from .v038.history import (
-    corroborate_downloads,
     _chrome_time_to_utc_iso,
+    corroborate_downloads,
     read_chromium_history_downloads,
 )
 from .v038.modes import classify_group_v038
@@ -85,9 +87,8 @@ from .v038.workflow import (
     _workflow_text_items,
 )
 
-
 SCHEMA_VERSION_V038 = "0.38"
-ENGINE_REVISION_V038 = "v0.38.4"
+ENGINE_REVISION_V038 = "v0.38.5"
 
 
 def resolve_database_selection(
@@ -97,16 +98,37 @@ def resolve_database_selection(
     object_store_name: str = leg.DEFAULT_STORE,
 ) -> tuple[str, dict[str, Any]]:
     """Delegate to the stage-specific evidence handler using the configured reader."""
-    return select_database(leveldb_path, blob_path, requested_database, object_store_name, discover_query_databases=discover_query_databases)
+    return select_database(
+        leveldb_path,
+        blob_path,
+        requested_database,
+        object_store_name,
+        discover_query_databases=discover_query_databases,
+    )
 
 
 def attach_history_download_corroboration(report: dict[str, Any], history_path: Path | None) -> None:
     """Delegate to the stage-specific evidence handler using the configured reader."""
-    return corroborate_downloads(report, history_path, read_chromium_history_downloads=read_chromium_history_downloads)
+    return corroborate_downloads(
+        report, history_path, read_chromium_history_downloads=read_chromium_history_downloads
+    )
 
 
 def compute_v038_sha256() -> str:
     return hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
+
+
+def _engine_provenance() -> dict[str, str]:
+    """Identify the installed bytes that produced this stage or bundle."""
+    return {
+        "engine_revision": ENGINE_REVISION_V038,
+        "schema_version": SCHEMA_VERSION_V038,
+        "base_legacy_engine_schema": "0.37",
+        "base_legacy_engine_sha256": hashlib.sha256(Path(leg.__file__).read_bytes()).hexdigest(),
+        "patched_engine_file": "src/comettrace/engine_v038.py",
+        "patched_engine_sha256": compute_v038_sha256(),
+        "modules_sha256": modules_digest(module_file_hashes(Path(__file__).parent)),
+    }
 
 
 def run_stage_v038(
@@ -149,12 +171,26 @@ def run_stage_v038(
 
         if dump_records_dir is not None:
             dump_records_dir.mkdir(parents=True, exist_ok=True)
-            leg.write_json(dump_records_dir / "perplexity_live_records.json", {"records": extracted["live_records"]})
-            leg.write_json(dump_records_dir / "perplexity_dead_records.json", {"records": extracted["dead_records"]})
-            leg.write_json(dump_records_dir / "perplexity_ldb_records.json", {"records": extracted["ldb_records"]})
-            leg.write_json(dump_records_dir / "perplexity_log_records.json", {"records": extracted["log_records"]})
-            leg.write_json(dump_records_dir / "perplexity_unmatched_records.json", {"records": extracted["unmatched_records"]})
-            leg.write_json(dump_records_dir / "perplexity_source_file_temporal_context_v38.json", source_file_temporal_context)
+            leg.write_json(
+                dump_records_dir / "perplexity_live_records.json", {"records": extracted["live_records"]}
+            )
+            leg.write_json(
+                dump_records_dir / "perplexity_dead_records.json", {"records": extracted["dead_records"]}
+            )
+            leg.write_json(
+                dump_records_dir / "perplexity_ldb_records.json", {"records": extracted["ldb_records"]}
+            )
+            leg.write_json(
+                dump_records_dir / "perplexity_log_records.json", {"records": extracted["log_records"]}
+            )
+            leg.write_json(
+                dump_records_dir / "perplexity_unmatched_records.json",
+                {"records": extracted["unmatched_records"]},
+            )
+            leg.write_json(
+                dump_records_dir / "perplexity_source_file_temporal_context_v38.json",
+                source_file_temporal_context,
+            )
 
         report = leg.reconstruct_browser_threads(
             extracted=extracted,
@@ -174,44 +210,64 @@ def run_stage_v038(
 
     # Stamp explicit v0.38 schema & provenance distinct from frozen v0.37
     report["schema_version"] = SCHEMA_VERSION_V038
-    report["engine_provenance"] = {
-        "engine_revision": ENGINE_REVISION_V038,
-        "schema_version": SCHEMA_VERSION_V038,
-        "base_legacy_engine_schema": "0.37",
-        "base_legacy_engine_sha256": hashlib.sha256(Path(leg.__file__).read_bytes()).hexdigest(),
-        "patched_engine_file": "src/comettrace/engine_v038.py",
-        "patched_engine_sha256": compute_v038_sha256(),
-    }
+    report["engine_provenance"] = _engine_provenance()
     src = report.setdefault("source", {})
     src["database_selection"] = db_selection
     diagnostics = report.setdefault("diagnostics", [])
+
     def note(code, message):
-        diagnostics.append({"code":code, "message":message})
+        diagnostics.append({"code": code, "message": message})
+
     stores = [d for d in db_selection["available_databases"] if d["has_target_store"]]
     selected = next(d for d in stores if d["name"] == selected_db)
     if db_selection["selection_mode"] == "auto" and len(stores) > 1:
-        note("multiple_databases", f"Selected {selected_db!r}. Other databases with store {store!r}: " +
-             ", ".join(d["name"] for d in stores if d["name"] != selected_db) + ". Use --database to inspect each.")
+        note(
+            "multiple_databases",
+            f"Selected {selected_db!r}. Other databases with store {store!r}: "
+            + ", ".join(d["name"] for d in stores if d["name"] != selected_db)
+            + ". Use --database to inspect each.",
+        )
     if selected.get("unreadable_records"):
         note("records_unreadable", f"{selected['unreadable_records']} record value(s) could not be decoded.")
     if not selected["record_count"] and not selected.get("unreadable_records"):
-        note("empty_store", f"Object store {store!r} contains no readable records and reported no decoding failures.")
+        note(
+            "empty_store",
+            f"Object store {store!r} contains no readable records and reported no decoding failures.",
+        )
     if selected["record_count"] and selected.get("recognized_thread_keys") == 0:
-        note("unrecognized_thread_keys", "Records exist but none has a recognized thread or sidebar key. Coverage is uncertain.")
+        note(
+            "unrecognized_thread_keys",
+            "Records exist but none has a recognized thread or sidebar key. Coverage is uncertain.",
+        )
     if not include_computer:
-        omitted_browser = [g["group_id"] for g in report.get("skipped", []) if any(
-            label.startswith("tool:browser_") or label == "legacy_browser_tool_event" for label in g.get("markers", []))]
-        note("browser_only_scope", f"Legacy scope omits Computer/ASI expansion, including ASI browser activity. "
-             f"{len(report.get('skipped', []))} grouped task(s) skipped, {len(omitted_browser)} with observed browser tools; "
-             "list-only promotion disabled. Omit --browser-only for full scope.")
+        omitted_browser = [
+            g["group_id"]
+            for g in report.get("skipped", [])
+            if any(
+                label.startswith("tool:browser_") or label == "legacy_browser_tool_event"
+                for label in g.get("markers", [])
+            )
+        ]
+        note(
+            "browser_only_scope",
+            f"Legacy scope omits Computer/ASI expansion, including ASI browser activity. "
+            f"{len(report.get('skipped', []))} grouped task(s) skipped, {len(omitted_browser)} with observed browser tools; "
+            "list-only promotion disabled. Omit --browser-only for full scope.",
+        )
         diagnostics[-1]["omitted_browser_tool_groups"] = omitted_browser
     if not report.get("threads"):
         if target_reference and before_reference:
             note("reference_no_match", f"No reconstructed thread matches reference {target_reference!r}.")
         else:
-            note("no_reconstructed_threads", "The selected store and analysis scope yielded no reconstructable thread.")
+            note(
+                "no_reconstructed_threads",
+                "The selected store and analysis scope yielded no reconstructable thread.",
+            )
     if any((t.get("final_answer") or {}).get("unsupported_variants") for t in report.get("threads", [])):
-        note("unsupported_answer_variant", "Some entries have an unfamiliar workflow text variant and no supported completed answer.")
+        note(
+            "unsupported_answer_variant",
+            "Some entries have an unfamiliar workflow text variant and no supported completed answer.",
+        )
     src["stage_selection"] = {
         "selected_stage": stage.to_metadata(),
         "total_stages_discovered": len(all_stages),
@@ -308,28 +364,25 @@ def run_input_v038(
                 dump_records_dir=st_dump,
             )
             stage_reports.append((st, rep))
-            stage_summaries.append({
-                "stage_id": st.stage_id,
-                "stage_role": st.stage_role,
-                "rel_leveldb_path": st.rel_leveldb_posix,
-                "database": (rep.get("source") or {}).get("database"),
-                "extraction_summary": rep.get("extraction_summary"),
-                "summary": rep.get("summary"),
-                "source_file_temporal_context": (rep.get("source") or {}).get("source_file_temporal_context"),
-            })
+            stage_summaries.append(
+                {
+                    "stage_id": st.stage_id,
+                    "stage_role": st.stage_role,
+                    "rel_leveldb_path": st.rel_leveldb_posix,
+                    "database": (rep.get("source") or {}).get("database"),
+                    "extraction_summary": rep.get("extraction_summary"),
+                    "summary": rep.get("summary"),
+                    "source_file_temporal_context": (rep.get("source") or {}).get(
+                        "source_file_temporal_context"
+                    ),
+                }
+            )
 
         bundle = {
             "tool": "comet-browser-reconstructor",
             "report_kind": "multi_stage_acquisition_bundle",
             "schema_version": SCHEMA_VERSION_V038,
-            "engine_provenance": {
-                "engine_revision": ENGINE_REVISION_V038,
-                "schema_version": SCHEMA_VERSION_V038,
-                "base_legacy_engine_schema": "0.37",
-                "base_legacy_engine_sha256": hashlib.sha256(Path(leg.__file__).read_bytes()).hexdigest(),
-                "patched_engine_file": "src/comettrace/engine_v038.py",
-                "patched_engine_sha256": compute_v038_sha256(),
-            },
+            "engine_provenance": _engine_provenance(),
             "source": {
                 "input": str(input_path),
                 "total_stages": len(stages),
@@ -348,26 +401,72 @@ def build_parser_v038() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="CometTrace v0.38 — Reconstruct Perplexity Comet Browser/Computer behavior from IndexedDB LevelDB artifacts."
     )
-    parser.add_argument("--engine", choices=["v038", "v037", "legacy"], default="v038", help="Select v0.38 patched engine (default) or frozen v0.37 legacy engine.")
-    parser.add_argument("--input", type=Path, default=None, help="LevelDB folder, profile/scenario folder, or ZIP containing Perplexity IndexedDB.")
-    parser.add_argument("--blob-input", type=Path, default=None, help="Optional matching IndexedDB blob folder.")
-    parser.add_argument("--before", type=Path, default=None, help="Before snapshot zip/folder for deletion comparison.")
-    parser.add_argument("--after", type=Path, default=None, help="After snapshot zip/folder for deletion comparison.")
-    parser.add_argument("--output", type=Path, default=Path("reconstruction.json"), help="JSON report output path.")
+    parser.add_argument(
+        "--engine",
+        choices=["v038", "v037", "legacy"],
+        default="v038",
+        help="Select v0.38 patched engine (default) or frozen v0.37 legacy engine.",
+    )
+    parser.add_argument(
+        "--input",
+        type=Path,
+        default=None,
+        help="LevelDB folder, profile/scenario folder, or ZIP containing Perplexity IndexedDB.",
+    )
+    parser.add_argument(
+        "--blob-input", type=Path, default=None, help="Optional matching IndexedDB blob folder."
+    )
+    parser.add_argument(
+        "--before", type=Path, default=None, help="Before snapshot zip/folder for deletion comparison."
+    )
+    parser.add_argument(
+        "--after", type=Path, default=None, help="After snapshot zip/folder for deletion comparison."
+    )
+    parser.add_argument(
+        "--output", type=Path, default=Path("reconstruction.json"), help="JSON report output path."
+    )
     parser.add_argument("--html-output", type=Path, default=None, help="Optional HTML report output path.")
-    parser.add_argument("--database", default="auto", help="IndexedDB database name, or 'auto' to detect keyval-store / pplx-query-cache-* automatically.")
-    parser.add_argument("--store", default=leg.DEFAULT_STORE, help="IndexedDB object store name (default: keyval).")
+    parser.add_argument(
+        "--database",
+        default="auto",
+        help="IndexedDB database name, or 'auto' to detect keyval-store / pplx-query-cache-* automatically.",
+    )
+    parser.add_argument(
+        "--store", default=leg.DEFAULT_STORE, help="IndexedDB object store name (default: keyval)."
+    )
     parser.add_argument("--stage", default=None, help="Select a stage identifier reported by --list-stages.")
     parser.add_argument("--before-stage", help="Select the stage used on the before side.")
     parser.add_argument("--after-stage", help="Select the stage used on the after side.")
-    parser.add_argument("--all-stages", action="store_true", help="Independently reconstruct all stages in a multi-stage ZIP/folder.")
-    parser.add_argument("--list-stages", action="store_true", help="List all discovered LevelDB stages in --input and exit.")
+    parser.add_argument(
+        "--all-stages",
+        action="store_true",
+        help="Independently reconstruct all stages in a multi-stage ZIP/folder.",
+    )
+    parser.add_argument(
+        "--list-stages", action="store_true", help="List all discovered LevelDB stages in --input and exit."
+    )
     parser.set_defaults(include_computer=True)
-    parser.add_argument("--include-computer", dest="include_computer", action="store_true", help="Include detected Computer/ASI tasks (default).")
-    parser.add_argument("--browser-only", dest="include_computer", action="store_false",
-                        help="Legacy scope: skip Computer/ASI expansion, including ASI browser tools. Search records may remain.")
-    parser.add_argument("--dump-records-dir", type=Path, default=None, help="Optional directory to write raw parsed record dumps.")
-    parser.add_argument("--target-reference", default=None, help="Optional reference code/keyword for case-study filtering.")
+    parser.add_argument(
+        "--include-computer",
+        dest="include_computer",
+        action="store_true",
+        help="Include detected Computer/ASI tasks (default).",
+    )
+    parser.add_argument(
+        "--browser-only",
+        dest="include_computer",
+        action="store_false",
+        help="Legacy scope: skip Computer/ASI expansion, including ASI browser tools. Search records may remain.",
+    )
+    parser.add_argument(
+        "--dump-records-dir",
+        type=Path,
+        default=None,
+        help="Optional directory to write raw parsed record dumps.",
+    )
+    parser.add_argument(
+        "--target-reference", default=None, help="Optional reference code/keyword for case-study filtering."
+    )
     return parser
 
 
@@ -397,6 +496,7 @@ def main(argv: list[str] | None = None) -> None:
                 continue
             forwarded.append(tok)
         import sys
+
         old_argv = sys.argv
         try:
             sys.argv = [old_argv[0]] + forwarded
@@ -427,23 +527,35 @@ def main(argv: list[str] | None = None) -> None:
     if args.before or args.after:
         if not args.before or not args.after:
             raise SystemExit("Both --before and --after are required for snapshot comparison mode.")
+
         def snapshot(path, selector, side):
             if not selector and path.is_dir() and len(discover_leveldb_stages(path)) > 1:
                 parser.error(f"Multiple stages in {side} input. Select --{side}-stage.")
-            report, stages = run_input_v038(input_path=path, database=args.database, store=args.store,
-                                       include_computer=args.include_computer, stage_selector=selector,
-                                       target_reference=args.target_reference)
+            report, stages = run_input_v038(
+                input_path=path,
+                database=args.database,
+                store=args.store,
+                include_computer=args.include_computer,
+                stage_selector=selector,
+                target_reference=args.target_reference,
+            )
             _print_diagnostics(stages)
             if "threads" not in report:
                 parser.error(f"Multiple stages in {side} input. Select --{side}-stage.")
             return report
+
         before = snapshot(args.before, args.before_stage or args.stage, "before")
         after = snapshot(args.after, args.after_stage or args.stage, "after")
         with _v038_runtime_patches():
             comparison = leg.compare_reconstructions(before, after)
-        comp = {"tool":"comet-browser-reconstructor", "schema_version":SCHEMA_VERSION_V038,
-                "mode":"before_after_comparison", "before_reconstruction":before,
-                "after_reconstruction":after, "snapshot_comparison":comparison}
+        comp = {
+            "tool": "comet-browser-reconstructor",
+            "schema_version": SCHEMA_VERSION_V038,
+            "mode": "before_after_comparison",
+            "before_reconstruction": before,
+            "after_reconstruction": after,
+            "snapshot_comparison": comparison,
+        }
         leg.write_json(args.output, comp)
         if args.html_output:
             leg.render_html_report(comp, args.html_output)
@@ -475,7 +587,9 @@ def main(argv: list[str] | None = None) -> None:
             leg.write_json(st_json, rep)
             primary["stages"][idx]["output_json"] = str(st_json)
             if args.html_output:
-                st_html = args.html_output.with_name(f"{args.html_output.stem}__{safe_id}{args.html_output.suffix}")
+                st_html = args.html_output.with_name(
+                    f"{args.html_output.stem}__{safe_id}{args.html_output.suffix}"
+                )
                 leg.render_html_report(rep, st_html)
                 primary["stages"][idx]["output_html"] = str(st_html)
         leg.write_json(out_path, primary)

@@ -2,8 +2,8 @@
 
 *Comet Browser/Computer Artifact Reconstructor*
 
-Version 0.38.4 writes report schema 0.38. Select `--engine v037` to run
-the frozen schema 0.37 engine. Version 0.38.4 preserves verbatim answers in
+Version 0.38.5 writes report schema 0.38. Select `--engine v037` to run
+the frozen schema 0.37 engine. Version 0.38.5 preserves verbatim answers in
 completed nested workflows when the retained child result is unambiguous.
 It uses the owning entry's backend UUID and narrows recipient and calendar
 field attribution when a prompt or unlabelled form input is ambiguous.
@@ -72,6 +72,27 @@ python -m unittest discover -s tests -v
 python -m comettrace --help
 ```
 
+## Research coverage
+
+The validated acquisitions cover Comet 148 and 156. See the [schema guide](docs/SUPPORTED_SCHEMAS.md)
+for the stored modes, the [architecture guide](docs/ARCHITECTURE.md) for the reconstruction
+pipeline and the [limitations](docs/LIMITATIONS.md) for attribution and concurrency boundaries.
+
+## Windows terminal examples
+
+From the project directory, create an output directory and supply your own acquisition paths.
+Use different output basenames for each run you want to keep.
+
+```powershell
+New-Item -ItemType Directory -Force output | Out-Null
+.\.venv\Scripts\python.exe -m comettrace --input "C:\Data\older.zip" --output output/older.json --html-output output/older.html
+.\.venv\Scripts\python.exe -m comettrace --input "C:\Data\newer.zip" --output output/newer.json --html-output output/newer.html
+```
+
+JSON contains per-thread records and evidence locations. HTML displays the reconstruction
+for review. Keep the acquisitions, report outputs and local account identifiers private.
+The release manifest pins the entry-point digest and all schema 0.38 evidence modules.
+
 ## Quick Start
 
 Run CometTrace against a browser acquisition and generate JSON and HTML
@@ -98,7 +119,7 @@ input, and deletion-related reconstruction, are available in
 
 ## Interpreting schema 0.38
 
-In 0.38.4, `classification.execution_mode` remains a compatibility category.
+In 0.38.5, `classification.execution_mode` remains a compatibility category.
 `observed_backend` contains the owning entry's retained mode/model fields and
 source reference. `observed_tool_events` identifies recorded workflow tool steps.
 An invocation alone does not establish a successful browser action. A browser

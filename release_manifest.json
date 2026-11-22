@@ -1,6 +1,6 @@
 {
   "package": "comettrace",
-  "package_version": "0.38.4",
+  "package_version": "0.38.5",
   "baseline_commit": "0cb17124a3e96f624896bcf33caed6f8afc68c89",
   "engine_file": "src/comettrace/legacy_engine.py",
   "engine_schema_version": "0.37",
@@ -9,7 +9,7 @@
   "logic_changes_relative_to_engine": false,
   "patched_engine_file": "src/comettrace/engine_v038.py",
   "patched_engine_schema_version": "0.38",
-  "patched_engine_sha256": "86f86ea1b857c879ab93e5999ebe8a082735edc34cb917046097396badc26c39",
+  "patched_engine_sha256": "d87f8016f72a65d96ded1d9277ee7ed8c1c61e5f8aba8ea0d4964245d84b1f7b",
   "patched_engine_scope": "Per-turn UUID attribution, field-level provenance, verbatim workflow answers, download evidence and snapshot comparison; retains the 0.38 JSON schema.",
   "release_scope": "Source code only. Raw acquisitions and generated JSON/HTML reports are intentionally excluded.",
   "note": "The historical refactor_manifest.json pinned digest 6d9c702d... for an earlier engine revision labeled 0.27. The digest above identifies the frozen schema 0.37 engine shipped in this source release.",
@@ -35,5 +35,18 @@
     "comparison_limit": "The included equivalence test compares the legacy and packaged entry points within the same environment; it does not compare generated reports against archived paper outputs."
   },
   "tool_name": "CometTrace",
-  "naming_note": "The repository, package, and CLI use the paper's tool name CometTrace. The frozen engine emits an internal JSON tool label of comet-browser-reconstructor; this pre-freeze constant is left unchanged to preserve the pinned engine digest and does not affect analysis."
+  "naming_note": "The repository, package, and CLI use the paper's tool name CometTrace. The frozen engine emits an internal JSON tool label of comet-browser-reconstructor; this pre-freeze constant is left unchanged to preserve the pinned engine digest and does not affect analysis.",
+  "module_files": {
+    "v038/__init__.py": "c0e9c841f21de2246903bbc141412057af56bca6d66482dd79b6d435f0544de4",
+    "v038/database.py": "9a46945b19b3bbecffa799c536e4d7cc0ec88e9736e7bd24df8a7e44b2fa1c22",
+    "v038/downloads.py": "060cd1975098b64d0d30285d531183b488ac17177f9a088ab7a951639ecdf8bc",
+    "v038/history.py": "c8a70a66b4a5ad12ef6f2bbdf2f9eec8d14ea13db73c2fadd807e8e173a332cb",
+    "v038/modes.py": "bd8418ffadbfcc280e6e91f09917f732088edc1e73fd80cd168335f1b99dd455",
+    "v038/payloads.py": "d659e2a59f5c87bc4d4f0f3675db7a815bbc16ae71f6c32bc9d3b5aec5e15c77",
+    "v038/records.py": "d8b5e73a36f53d041861c000b7a578e892f50431bc3b355d4f2820e2a4c6a0e2",
+    "v038/runtime.py": "cccc7f47a24f39195ef70a318440a54b2c663390ca4240365e32fde70eece000",
+    "v038/stages.py": "66e67955e182848e2562f6b6b7e080807b308f844b50f8cfdc6fea1a4593e11f",
+    "v038/workflow.py": "71e0978d46c2b5dc893be801a7336e771b4772f9da9cbc1a909484d8826ca5da"
+  },
+  "modules_sha256": "596f48c33933b4974fcf406c8795b7ed06a4bbceba7485bf7da2afb7064ac4d1"
 }
