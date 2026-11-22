@@ -2,7 +2,8 @@
 """Backward-compatible launcher (legacy filename).
 
 The tool was previously invoked as `comet_browser_reconstruct.py`. That
-invocation style remains valid and is equivalent to `comettrace.py`:
+invocation style remains valid and uses the same default engine as
+`python -m comettrace` and the installed `comettrace` command:
     python comet_browser_reconstruct.py --input <path> --output out.json
 """
 

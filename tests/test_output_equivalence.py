@@ -3,7 +3,7 @@
 Usage:
     python tests/test_output_equivalence.py <acquisition> [more ...]
 
-For each supplied acquisition, this test runs the frozen reconstruction engine
+For each supplied acquisition, this test runs the default reconstruction engine
 through:
 
 1. the backward-compatible legacy launcher; and
@@ -100,7 +100,7 @@ def run_entry_point(command: list[str]) -> None:
 
 
 def main() -> int:
-    """Verify the engine digest and compare the two execution entry points."""
+    """Verify engine provenance and compare the two default execution entry points."""
 
     if len(sys.argv) < 2:
         print(

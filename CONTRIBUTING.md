@@ -70,10 +70,10 @@ interpretation behavior should be implemented in separately versioned modules.
 See:
 
 ```text
-docs/REFACTORING_NOTES.md
+docs/ARCHITECTURE.md
 ```
 
-for the planned second-stage structure.
+for the current schema 0.38 modules and the frozen engine boundary.
 
 ## Contributions that do not modify the engine
 
